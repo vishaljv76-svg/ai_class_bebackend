@@ -1,0 +1,8 @@
+.env
+.env.*
+!.env.example
+*.log
+uploads/
+vendor/
+.idea/
+.vscode/

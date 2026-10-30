@@ -1,0 +1,11 @@
+# Environment & sensitive configs
+.env
+config/local_config.php
+
+# Operating system files
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
+
