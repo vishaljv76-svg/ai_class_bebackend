@@ -280,6 +280,8 @@ function calculateUserProgress($conn, $userId) {
         "studyStreakDays" => $studyStreakDays,
         "study_streak_days" => $studyStreakDays,
         "totalStudyTimeMinutes" => $totalStudyTimeMinutes,
+        "weekly_hours" => round($totalStudyTimeMinutes / 60, 1),
+        "weeklyHours" => round($totalStudyTimeMinutes / 60, 1),
         "formattedStudyTime" => floor($totalStudyTimeMinutes / 60) > 0 
             ? floor($totalStudyTimeMinutes / 60) . "h " . ($totalStudyTimeMinutes % 60) . "m"
             : $totalStudyTimeMinutes . "m",

@@ -231,6 +231,12 @@ try {
         "message" => "Quiz submitted and evaluated successfully",
         "attempt_id" => $newAttemptId,
         "quiz_id" => $quizId,
+        "score_percentage" => $scorePercentage,
+        "correct_count" => $correctCount,
+        "total_questions" => $totalQuestions,
+        "feedback_header" => $feedbackHeader,
+        "feedback_text" => $feedbackText,
+        "review_items" => $reviewItems,
         "results" => [
             "titleMessage" => $titleMessage,
             "scorePercentage" => $scorePercentage,

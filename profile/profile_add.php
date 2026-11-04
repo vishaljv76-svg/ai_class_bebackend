@@ -2,6 +2,7 @@
 header("Content-Type: application/json");
 
 require_once __DIR__ . "/../config/config.php";
+require_once __DIR__ . "/../common/auth_middleware.php";
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     http_response_code(405);
@@ -12,19 +13,28 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     exit;
 }
 
+// Normalize Authorization headers in environments where Apache strips HTTP_AUTHORIZATION
+if (empty($_SERVER["HTTP_AUTHORIZATION"])) {
+    $reqHeaders = function_exists("getallheaders") ? getallheaders() : [];
+    foreach ($reqHeaders as $hKey => $hVal) {
+        if (strcasecmp($hKey, "Authorization") === 0) {
+            $_SERVER["HTTP_AUTHORIZATION"] = $hVal;
+        } elseif (strcasecmp($hKey, "X-Auth-Token") === 0) {
+            $_SERVER["HTTP_X_AUTH_TOKEN"] = $hVal;
+        }
+    }
+}
+
 $data = json_decode(file_get_contents("php://input"), true);
 
 if (!is_array($data)) {
-    http_response_code(400);
-    echo json_encode([
-        "success" => false,
-        "message" => "Invalid JSON payload"
-    ]);
-    exit;
+    $data = $_POST;
 }
 
+$authUser = getAuthenticatedUser($conn, false);
+
 // Support both standard and UI state property names
-$user_id = filter_var($data["user_id"] ?? $data["userId"] ?? null, FILTER_VALIDATE_INT);
+$user_id = $authUser ? (int)$authUser["id"] : filter_var($data["user_id"] ?? $data["userId"] ?? null, FILTER_VALIDATE_INT);
 $course = trim($data["course"] ?? $data["selectedCourse"] ?? "");
 $department = trim($data["department"] ?? $data["selectedDepartment"] ?? "");
 $semesterInput = $data["semester"] ?? $data["selectedSemester"] ?? null;

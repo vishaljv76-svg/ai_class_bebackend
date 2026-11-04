@@ -2,6 +2,14 @@
 .env
 config/local_config.php
 
+# Database dumps & backups
+database/*.sql
+*.sql
+*.bak
+
+# Scratch & test scripts
+scratch/
+
 # Operating system files
 Thumbs.db
 .DS_Store
