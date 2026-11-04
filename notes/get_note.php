@@ -3,6 +3,7 @@ header("Content-Type: application/json; charset=UTF-8");
 
 require_once __DIR__ . "/../config/config.php";
 require_once __DIR__ . "/../common/auth_middleware.php";
+require_once __DIR__ . "/../services/educational_resources.php";
 
 if ($_SERVER["REQUEST_METHOD"] !== "GET") {
     http_response_code(405);
@@ -102,6 +103,8 @@ try {
     $summaryText = $note["summary"] ?: "";
     $fullContentText = $note["full_content"] ?: ($summaryText ?: "Summary of the lecture concept.");
 
+    $educationalResources = getLectureResources($conn, (int)$note["id"], (int)$note["user_id"]);
+
     http_response_code(200);
     echo json_encode([
         "success" => true,
@@ -135,6 +138,7 @@ try {
             "isBookmarked" => (bool)$note["is_bookmarked"],
             "keyTakeaways" => $keyTakeaways,
             "importantTerms" => $importantTerms,
+            "educationalResources" => $educationalResources,
             "created_at" => $note["created_at"],
             "updated_at" => $note["updated_at"]
         ]

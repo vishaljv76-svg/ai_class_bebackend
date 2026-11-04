@@ -29,12 +29,26 @@ $authUser = getAuthenticatedUser($conn, false);
 $userId = $authUser ? (int)$authUser["id"] : filter_var($_GET["user_id"] ?? $_GET["userId"] ?? null, FILTER_VALIDATE_INT);
 
 $quizId = filter_var($_GET["id"] ?? $_GET["quiz_id"] ?? null, FILTER_VALIDATE_INT);
+$noteId = filter_var($_GET["note_id"] ?? $_GET["noteId"] ?? null, FILTER_VALIDATE_INT);
+
+if ((!$quizId || $quizId < 1) && $noteId && $noteId > 0) {
+    $lookupStmt = $conn->prepare("SELECT id FROM quizzes WHERE note_id = ? " . ($userId ? "AND user_id = ?" : "") . " ORDER BY id DESC LIMIT 1");
+    if ($userId) {
+        $lookupStmt->execute([$noteId, $userId]);
+    } else {
+        $lookupStmt->execute([$noteId]);
+    }
+    $foundQ = $lookupStmt->fetch();
+    if ($foundQ) {
+        $quizId = (int)$foundQ["id"];
+    }
+}
 
 if (!$quizId || $quizId < 1) {
     http_response_code(400);
     echo json_encode([
         "success" => false,
-        "message" => "Valid 'id' (quiz_id) is required."
+        "message" => "Valid 'id' (quiz_id) or 'note_id' is required."
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }
