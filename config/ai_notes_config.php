@@ -4,10 +4,20 @@
  * Supports Groq Cloud (Llama 3), OpenAI (GPT-4o-mini), and Google Gemini.
  */
 
-// Read API keys from environment or local overrides
-$groqAiKey = getenv("GROQ_API_KEY") ?: "";
-$openaiAiKey = getenv("OPENAI_API_KEY") ?: "";
-$geminiAiKey = getenv("GEMINI_API_KEY") ?: "";
+// Check for git-ignored local configuration file
+if (file_exists(__DIR__ . "/local_config.php")) {
+    require_once __DIR__ . "/local_config.php";
+}
+
+// Read API keys from environment (getenv, $_ENV, $_SERVER) or local configuration
+$groqAiKey = getenv("GROQ_API_KEY") 
+    ?: ($_ENV["GROQ_API_KEY"] ?? ($_SERVER["GROQ_API_KEY"] ?? ($localGroqApiKey ?? "")));
+
+$openaiAiKey = getenv("OPENAI_API_KEY") 
+    ?: ($_ENV["OPENAI_API_KEY"] ?? ($_SERVER["OPENAI_API_KEY"] ?? ($localOpenaiApiKey ?? "")));
+
+$geminiAiKey = getenv("GEMINI_API_KEY") 
+    ?: ($_ENV["GEMINI_API_KEY"] ?? ($_SERVER["GEMINI_API_KEY"] ?? ($localGeminiApiKey ?? "")));
 
 // Service configurations
 $aiServices = [

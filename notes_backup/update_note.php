@@ -14,6 +14,7 @@ if ($method !== "POST" && $method !== "PUT") {
     exit;
 }
 
+
 $data = json_decode(file_get_contents("php://input"), true);
 
 if (!is_array($data)) {

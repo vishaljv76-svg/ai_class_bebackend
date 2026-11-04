@@ -6,9 +6,17 @@
  * Keys can be provided via environment variables or set directly below.
  */
 
-// Define API keys (Check environment variable first, then fallback to local configuration)
-$openaiApiKey = getenv("OPENAI_API_KEY") ?: "";
-$groqApiKey = getenv("GROQ_API_KEY") ?: "";
+// Check for git-ignored local configuration file
+if (file_exists(__DIR__ . "/local_config.php")) {
+    require_once __DIR__ . "/local_config.php";
+}
+
+// Define API keys (Check environment variables, $_ENV, $_SERVER, then local configuration)
+$openaiApiKey = getenv("OPENAI_API_KEY") 
+    ?: ($_ENV["OPENAI_API_KEY"] ?? ($_SERVER["OPENAI_API_KEY"] ?? ($localOpenaiApiKey ?? "")));
+
+$groqApiKey = getenv("GROQ_API_KEY") 
+    ?: ($_ENV["GROQ_API_KEY"] ?? ($_SERVER["GROQ_API_KEY"] ?? ($localGroqApiKey ?? "")));
 
 // Active provider detection
 $activeSTTService = null;
