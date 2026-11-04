@@ -48,3 +48,4 @@ CREATE TABLE IF NOT EXISTS `lecture_resources` (
   CONSTRAINT `fk_resources_note` FOREIGN KEY (`note_id`) REFERENCES `notes` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_resources_job` FOREIGN KEY (`job_id`) REFERENCES `lecture_processing_jobs` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

@@ -183,3 +183,4 @@ try {
         "message" => "Database error while starting lecture processing: " . $e->getMessage()
     ], JSON_UNESCAPED_UNICODE);
 }
+

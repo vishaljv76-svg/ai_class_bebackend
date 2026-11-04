@@ -128,3 +128,4 @@ try {
         "message" => "Database error retrying job: " . $e->getMessage()
     ], JSON_UNESCAPED_UNICODE);
 }
+

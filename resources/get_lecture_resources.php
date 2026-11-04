@@ -80,3 +80,4 @@ try {
         "message" => "Database error fetching resources: " . $e->getMessage()
     ], JSON_UNESCAPED_UNICODE);
 }
+

@@ -309,3 +309,4 @@ if (!function_exists('getLectureResources')) {
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 }
+

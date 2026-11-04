@@ -191,3 +191,4 @@ try {
         "message" => "Database error checking job status: " . $e->getMessage()
     ], JSON_UNESCAPED_UNICODE);
 }
+

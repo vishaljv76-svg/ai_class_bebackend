@@ -461,3 +461,4 @@ if (php_sapi_name() === 'cli' && isset($argv[1])) {
         runLectureProcessingPipeline($conn, $cliJobId);
     }
 }
+
