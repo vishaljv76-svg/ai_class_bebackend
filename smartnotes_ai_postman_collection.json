@@ -1,484 +1,3334 @@
 {
-  "info": {
-    "_postman_id": "b38f8319-86ab-472d-9af2-3e2b2a60bf99",
-    "name": "SmartNotes AI - Complete REST API Collection",
-    "description": "Production-grade Postman collection for SmartNotes AI Android App backend (PHP + MySQL on XAMPP).\nCovers Authentication, Profile, Notes CRUD, and Dashboard Stats.\nWorks with Android frontend (Emulator 10.0.2.2 or Physical Device LAN IP).",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "variable": [
-    {
-      "key": "base_url",
-      "value": "http://localhost/ai_class_be",
-      "type": "string"
+    "info": {
+        "_postman_id": "b38f8319-86ab-472d-9af2-3e2b2a60bf99",
+        "name": "SmartNotes AI - Complete REST API Collection",
+        "description": "Production-grade Postman collection for SmartNotes AI Android App backend (PHP + MySQL on XAMPP).\nCovers Authentication, Profile, Notes CRUD, and Dashboard Stats.\nWorks with Android frontend (Emulator 10.0.2.2 or Physical Device LAN IP).",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
-    {
-      "key": "auth_token",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "user_id",
-      "value": "1",
-      "type": "string"
-    },
-    {
-      "key": "test_email",
-      "value": "alex.morgan@campus.edu",
-      "type": "string"
-    },
-    {
-      "key": "reset_token",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "note_id",
-      "value": "1",
-      "type": "string"
-    }
-  ],
-  "item": [
-    {
-      "name": "1. Authentication",
-      "description": "User registration, login, token issuance, password recovery, and session termination.",
-      "item": [
+    "variable": [
         {
-          "name": "1.1 Sign Up (Register)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status code is 201 or 200\", function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-                  "});",
-                  "var jsonData = pm.response.json();",
-                  "if (jsonData.token) {",
-                  "    pm.collectionVariables.set(\"auth_token\", jsonData.token);",
-                  "}",
-                  "if (jsonData.user_id) {",
-                  "    pm.collectionVariables.set(\"user_id\", jsonData.user_id.toString());",
-                  "}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"studentName\": \"Alex Morgan\",\n  \"email\": \"alex.morgan@campus.edu\",\n  \"password\": \"studentSecret123!\",\n  \"confirmPassword\": \"studentSecret123!\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/auth/signup.php",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "signup.php"]
-            }
-          }
+            "key": "base_url",
+            "value": "http://localhost/ai_class_be",
+            "type": "string"
         },
         {
-          "name": "1.2 Login",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "var jsonData = pm.response.json();",
-                  "if (jsonData.token) {",
-                  "    pm.collectionVariables.set(\"auth_token\", jsonData.token);",
-                  "}",
-                  "if (jsonData.user && jsonData.user.id) {",
-                  "    pm.collectionVariables.set(\"user_id\", jsonData.user.id.toString());",
-                  "}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{test_email}}\",\n  \"password\": \"studentSecret123!\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/auth/login.php",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "login.php"]
-            }
-          }
+            "key": "auth_token",
+            "value": "",
+            "type": "string"
         },
         {
-          "name": "1.3 Forgot Password (Request OTP / Token)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "var jsonData = pm.response.json();",
-                  "if (jsonData.reset_token) {",
-                  "    pm.collectionVariables.set(\"reset_token\", jsonData.reset_token);",
-                  "}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{test_email}}\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/auth/forgot_password.php",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "forgot_password.php"]
-            }
-          }
+            "key": "user_id",
+            "value": "1",
+            "type": "string"
         },
         {
-          "name": "1.4 Reset Password",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{test_email}}\",\n  \"token\": \"{{reset_token}}\",\n  \"new_password\": \"studentSecret123!\",\n  \"confirm_password\": \"studentSecret123!\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/auth/reset_password.php",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "reset_password.php"]
-            }
-          }
+            "key": "test_email",
+            "value": "alex.morgan@campus.edu",
+            "type": "string"
         },
         {
-          "name": "1.5 Logout",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/logout.php",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "logout.php"]
-            }
-          }
+            "key": "reset_token",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "note_id",
+            "value": "1",
+            "type": "string"
+        },
+        {
+            "key": "audio_id",
+            "value": "1",
+            "type": "string"
+        },
+        {
+            "key": "transcription_id",
+            "value": "1",
+            "type": "string"
+        },
+        {
+            "key": "ai_note_id",
+            "value": "1",
+            "type": "string"
+        },
+        {
+            "key": "quiz_id",
+            "value": "1",
+            "type": "string"
+        },
+        {
+            "key": "reminder_id",
+            "value": "1",
+            "type": "string"
+        },
+        {
+            "key": "notification_id",
+            "value": "1",
+            "type": "string"
+        },
+        {
+            "key": "file_id",
+            "value": "1",
+            "type": "string"
         }
-      ]
-    },
-    {
-      "name": "2. Student Profile",
-      "description": "Onboarding profile creation, profile updates, and fetch profile.",
-      "item": [
+    ],
+    "item": [
         {
-          "name": "2.1 Add Profile (Onboarding)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"userId\": {{user_id}},\n  \"selectedCourse\": \"B.Tech · Computer Science\",\n  \"selectedDepartment\": \"Computer Science & Engineering\",\n  \"selectedSemester\": \"Semester 7 · Final year\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/profile/profile_add.php",
-              "host": ["{{base_url}}"],
-              "path": ["profile", "profile_add.php"]
-            }
-          }
-        },
-        {
-          "name": "2.2 Edit Profile",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"studentName\": \"Alex Morgan\",\n  \"course\": \"B.Tech · Computer Science\",\n  \"department\": \"Computer Science & Engineering\",\n  \"semester\": 7\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/profile/profile_edit.php",
-              "host": ["{{base_url}}"],
-              "path": ["profile", "profile_edit.php"]
-            }
-          }
-        },
-        {
-          "name": "2.3 Fetch Profile",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/profile/profile_fetch.php?user_id={{user_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["profile", "profile_fetch.php"],
-              "query": [
+            "name": "1. Authentication",
+            "description": "User registration, login, token issuance, password recovery, and session termination.",
+            "item": [
                 {
-                  "key": "user_id",
-                  "value": "{{user_id}}"
-                }
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "3. Notes",
-      "description": "Full CRUD operations for student lecture notes with filtering and search.",
-      "item": [
-        {
-          "name": "3.1 List Notes (All)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/notes/list_notes.php?user_id={{user_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["notes", "list_notes.php"],
-              "query": [
-                {
-                  "key": "user_id",
-                  "value": "{{user_id}}"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "3.2 Search Notes",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/notes/list_notes.php?user_id={{user_id}}&search=normalization&category=Computer Science",
-              "host": ["{{base_url}}"],
-              "path": ["notes", "list_notes.php"],
-              "query": [
-                {
-                  "key": "user_id",
-                  "value": "{{user_id}}"
+                    "name": "1.1 Sign Up (Register)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 201 or 200\", function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData.token) {",
+                                    "    pm.collectionVariables.set(\"auth_token\", jsonData.token);",
+                                    "}",
+                                    "if (jsonData.user_id) {",
+                                    "    pm.collectionVariables.set(\"user_id\", jsonData.user_id.toString());",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"studentName\": \"Alex Morgan\",\n  \"email\": \"alex.morgan@campus.edu\",\n  \"password\": \"studentSecret123!\",\n  \"confirmPassword\": \"studentSecret123!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/signup.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "signup.php"
+                            ]
+                        }
+                    }
                 },
                 {
-                  "key": "search",
-                  "value": "normalization"
+                    "name": "1.2 Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData.token) {",
+                                    "    pm.collectionVariables.set(\"auth_token\", jsonData.token);",
+                                    "}",
+                                    "if (jsonData.user && jsonData.user.id) {",
+                                    "    pm.collectionVariables.set(\"user_id\", jsonData.user.id.toString());",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{test_email}}\",\n  \"password\": \"studentSecret123!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/login.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login.php"
+                            ]
+                        }
+                    }
                 },
                 {
-                  "key": "category",
-                  "value": "Computer Science"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "3.3 Get Note by ID",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/notes/get_note.php?id={{note_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["notes", "get_note.php"],
-              "query": [
+                    "name": "1.3 Forgot Password (Request OTP / Token)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData.reset_token) {",
+                                    "    pm.collectionVariables.set(\"reset_token\", jsonData.reset_token);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{test_email}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/forgot_password.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "forgot_password.php"
+                            ]
+                        }
+                    }
+                },
                 {
-                  "key": "id",
-                  "value": "{{note_id}}"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "3.4 Create / Save Note",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "var jsonData = pm.response.json();",
-                  "if (jsonData.note_id) {",
-                  "    pm.collectionVariables.set(\"note_id\", jsonData.note_id.toString());",
-                  "}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"userId\": {{user_id}},\n  \"title\": \"Distributed Systems: Raft Consensus Algorithm\",\n  \"subject\": \"Computer Science\",\n  \"courseCode\": \"CS401\",\n  \"summary\": \"Raft achieves consensus via leader election, log replication, and safety invariants.\",\n  \"keyTakeaways\": [\n    \"Leader election prevents split-brain anomalies.\",\n    \"Log matching ensures state machine replication consistency.\"\n  ],\n  \"importantTerms\": [\n    \"Leader Election\",\n    \"Heartbeat\",\n    \"Log Replication\"\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/notes/create_note.php",
-              "host": ["{{base_url}}"],
-              "path": ["notes", "create_note.php"]
-            }
-          }
-        },
-        {
-          "name": "3.5 Update Note / Bookmark",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"id\": {{note_id}},\n  \"isBookmarked\": true,\n  \"title\": \"Distributed Systems: Raft Consensus (Updated)\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/notes/update_note.php",
-              "host": ["{{base_url}}"],
-              "path": ["notes", "update_note.php"]
-            }
-          }
-        },
-        {
-          "name": "3.6 Delete Note",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/notes/delete_note.php?id={{note_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["notes", "delete_note.php"],
-              "query": [
+                    "name": "1.4 Reset Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{test_email}}\",\n  \"token\": \"{{reset_token}}\",\n  \"new_password\": \"studentSecret123!\",\n  \"confirm_password\": \"studentSecret123!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/reset_password.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "reset_password.php"
+                            ]
+                        }
+                    }
+                },
                 {
-                  "key": "id",
-                  "value": "{{note_id}}"
+                    "name": "1.5 Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/auth/logout.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "logout.php"
+                            ]
+                        }
+                    }
                 }
-              ]
-            }
-          }
+            ]
+        },
+        {
+            "name": "2. Student Profile",
+            "description": "Onboarding profile creation, profile updates, and fetch profile.",
+            "item": [
+                {
+                    "name": "2.1 Add Profile (Onboarding)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"userId\": {{user_id}},\n  \"selectedCourse\": \"B.Tech · Computer Science\",\n  \"selectedDepartment\": \"Computer Science & Engineering\",\n  \"selectedSemester\": \"Semester 7 · Final year\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/profile/profile_add.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "profile",
+                                "profile_add.php"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "2.2 Edit Profile",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"studentName\": \"Alex Morgan\",\n  \"course\": \"B.Tech · Computer Science\",\n  \"department\": \"Computer Science & Engineering\",\n  \"semester\": 7\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/profile/profile_edit.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "profile",
+                                "profile_edit.php"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "2.3 Fetch Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/profile/profile_fetch.php?user_id={{user_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "profile",
+                                "profile_fetch.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "user_id",
+                                    "value": "{{user_id}}"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "2.4 Upload Profile Photo",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"userId\": {{user_id}},\n  \"image_base64\": \"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/profile/profile_upload_photo.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "profile",
+                                "profile_upload_photo.php"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "3. Notes",
+            "description": "Full CRUD operations for student lecture notes with filtering and search.",
+            "item": [
+                {
+                    "name": "3.1 List Notes (All)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Success is true\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.notes).to.be.an('array');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/notes/list_notes.php?user_id={{user_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notes",
+                                "list_notes.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "user_id",
+                                    "value": "{{user_id}}"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "3.2 Search Notes",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Search returns matching notes\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.notes).to.be.an('array');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/notes/list_notes.php?user_id={{user_id}}&search=normalization&category=Computer Science",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notes",
+                                "list_notes.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "user_id",
+                                    "value": "{{user_id}}"
+                                },
+                                {
+                                    "key": "search",
+                                    "value": "normalization"
+                                },
+                                {
+                                    "key": "category",
+                                    "value": "Computer Science"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "3.3 Get Note by ID",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Note details returned with lecture title\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.note).to.be.an('object');",
+                                    "    pm.expect(jsonData.note.lectureTitle).to.be.a('string');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/notes/get_note.php?id={{note_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notes",
+                                "get_note.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "id",
+                                    "value": "{{note_id}}"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "3.4 Create / Save Note",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 201 or 200\", function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Note saved successfully\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.note_id).to.be.a('number');",
+                                    "});",
+                                    "if (jsonData.note_id) {",
+                                    "    pm.collectionVariables.set(\"note_id\", jsonData.note_id.toString());",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"userId\": {{user_id}},\n  \"title\": \"Distributed Systems: Raft Consensus Algorithm\",\n  \"subject\": \"Computer Science\",\n  \"courseCode\": \"CS401\",\n  \"summary\": \"Raft achieves consensus via leader election, log replication, and safety invariants.\",\n  \"keyTakeaways\": [\n    \"Leader election prevents split-brain anomalies.\",\n    \"Log matching ensures state machine replication consistency.\"\n  ],\n  \"importantTerms\": [\n    \"Leader Election\",\n    \"Heartbeat\",\n    \"Log Replication\"\n  ]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/notes/create_note.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notes",
+                                "create_note.php"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "3.5 Update Note / Bookmark",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Note updated successfully\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"id\": {{note_id}},\n  \"isBookmarked\": true,\n  \"title\": \"Distributed Systems: Raft Consensus (Updated)\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/notes/update_note.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notes",
+                                "update_note.php"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "3.6 Delete Note",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Note deleted successfully\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/notes/delete_note.php?id={{note_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notes",
+                                "delete_note.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "id",
+                                    "value": "{{note_id}}"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "4. Dashboard",
+            "description": "Calculates live statistics, profile info, total notes, subjects count, quizzes count, recent notes, and recent activities from MySQL.",
+            "item": [
+                {
+                    "name": "4.1 Get Dashboard Stats (Overview)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Success is true\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "});",
+                                    "pm.test(\"Has user and profile info\", function () {",
+                                    "    pm.expect(jsonData.userName).to.be.a('string');",
+                                    "    pm.expect(jsonData.user).to.be.an('object');",
+                                    "});",
+                                    "pm.test(\"Has real calculated statistics\", function () {",
+                                    "    pm.expect(jsonData.totalNotes).to.be.a('number');",
+                                    "    pm.expect(jsonData.subjectsCount).to.be.a('number');",
+                                    "    pm.expect(jsonData.quizzesCount).to.be.a('number');",
+                                    "});",
+                                    "pm.test(\"Has recent notes and activities arrays\", function () {",
+                                    "    pm.expect(jsonData.recentNotes).to.be.an('array');",
+                                    "    pm.expect(jsonData.recentActivities).to.be.an('array');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/dashboard/dashboard_stats.php?user_id={{user_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "dashboard",
+                                "dashboard_stats.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "user_id",
+                                    "value": "{{user_id}}"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "4.2 Get Dashboard Stats (Bearer Token Auth)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Success is true\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/dashboard/dashboard_stats.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "dashboard",
+                                "dashboard_stats.php"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "4.3 Get Recent Activities",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Success is true and returns activities array\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.activities).to.be.an('array');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/dashboard/recent_activity.php?user_id={{user_id}}&limit=10",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "dashboard",
+                                "recent_activity.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "user_id",
+                                    "value": "{{user_id}}"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "4.4 Get Recent Notes",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Success is true and returns recentNotes array\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.recentNotes).to.be.an('array');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/dashboard/recent_notes.php?user_id={{user_id}}&limit=5",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "dashboard",
+                                "recent_notes.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "user_id",
+                                    "value": "{{user_id}}"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "5"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "5. Audio",
+            "description": "Upload, list, retrieve, and delete lecture audio recordings (MP3, WAV, M4A, etc.).",
+            "item": [
+                {
+                    "name": "5.1 Upload Audio File (Multipart Form-Data)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 201 Created\", function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Audio uploaded successfully\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.audio_id).to.be.a('number');",
+                                    "});",
+                                    "if (jsonData.audio_id) {",
+                                    "    pm.collectionVariables.set(\"audio_id\", jsonData.audio_id.toString());",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "userId",
+                                    "value": "{{user_id}}",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "title",
+                                    "value": "Database Systems Lecture 01",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "duration",
+                                    "value": "42 min",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "audio",
+                                    "type": "file",
+                                    "src": ""
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/audio/upload_audio.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "audio",
+                                "upload_audio.php"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "5.2 Upload Audio File (Base64 JSON)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 201 Created\", function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Audio saved successfully from base64\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.audio_id).to.be.a('number');",
+                                    "});",
+                                    "if (jsonData.audio_id) {",
+                                    "    pm.collectionVariables.set(\"audio_id\", jsonData.audio_id.toString());",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"userId\": {{user_id}},\n  \"title\": \"Linear Algebra Eigenvalues Class\",\n  \"fileName\": \"eigenvalues_lecture.mp3\",\n  \"duration\": \"36 min\",\n  \"audio_base64\": \"//uQxAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAFAAAACAA=\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/audio/upload_audio.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "audio",
+                                "upload_audio.php"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "5.3 List Audio Files",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Success is true and returns audio list\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.audio_files).to.be.an('array');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/audio/list_audio.php?user_id={{user_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "audio",
+                                "list_audio.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "user_id",
+                                    "value": "{{user_id}}"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "5.4 Get Audio File Details by ID",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Audio details returned\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.audio).to.be.an('object');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/audio/get_audio.php?id={{audio_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "audio",
+                                "get_audio.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "id",
+                                    "value": "{{audio_id}}"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "5.5 Delete Audio File",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Audio file deleted successfully\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/audio/delete_audio.php?id={{audio_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "audio",
+                                "delete_audio.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "id",
+                                    "value": "{{audio_id}}"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "5.6 Check Transcription Service Status",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Service info returned\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.service_info).to.be.an('object');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/audio/transcription_status.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "audio",
+                                "transcription_status.php"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "5.7 Transcribe Audio File (Speech-to-Text)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200, 201 or 422 if key unconfigured\", function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 422]);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData.transcription_id) {",
+                                    "    pm.collectionVariables.set(\"transcription_id\", jsonData.transcription_id.toString());",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"userId\": {{user_id}},\n  \"audioId\": {{audio_id}}\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/audio/transcribe_audio.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "audio",
+                                "transcribe_audio.php"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "5.8 Save / Store Transcription",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 201 Created\", function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Transcription saved successfully\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.transcription_id).to.be.a('number');",
+                                    "});",
+                                    "if (jsonData.transcription_id) {",
+                                    "    pm.collectionVariables.set(\"transcription_id\", jsonData.transcription_id.toString());",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"userId\": {{user_id}},\n  \"audioId\": {{audio_id}},\n  \"lectureTitle\": \"Database Normalization Lecture\",\n  \"language\": \"English\",\n  \"duration\": \"42:18\",\n  \"confidence\": 98.0,\n  \"fullTranscript\": \"Today we will look at normalization: organizing relational tables to reduce duplicated data and keep updates consistent. If a student's address is repeated for every enrollment, changing it in just one row creates an update anomaly.\",\n  \"paragraphs\": [\n    {\n      \"timestamp\": \"00:00\",\n      \"speaker\": \"Prof. Sarah Chen\",\n      \"text\": \"Today we will look at normalization: organizing relational tables to reduce duplicated data and keep updates consistent.\"\n    },\n    {\n      \"timestamp\": \"04:12\",\n      \"speaker\": \"Prof. Sarah Chen\",\n      \"text\": \"If a student's address is repeated for every enrollment, changing it in just one row creates an update anomaly.\"\n    }\n  ]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/audio/save_transcription.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "audio",
+                                "save_transcription.php"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "5.9 List Transcriptions",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Transcriptions array returned\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.transcriptions).to.be.an('array');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/audio/list_transcriptions.php?user_id={{user_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "audio",
+                                "list_transcriptions.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "user_id",
+                                    "value": "{{user_id}}"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "5.10 Get Transcription by ID",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Full transcript text and paragraphs returned\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.transcription).to.be.an('object');",
+                                    "    pm.expect(jsonData.transcription.fullTranscript).to.be.a('string');",
+                                    "    pm.expect(jsonData.transcription.paragraphs).to.be.an('array');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/audio/get_transcription.php?id={{transcription_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "audio",
+                                "get_transcription.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "id",
+                                    "value": "{{transcription_id}}"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "5.11 Delete Transcription",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Transcription deleted successfully\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/audio/delete_transcription.php?id={{transcription_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "audio",
+                                "delete_transcription.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "id",
+                                    "value": "{{transcription_id}}"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "6. AI Notes Generation",
+            "item": [
+                {
+                    "name": "6.1 Check AI Service Status",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/notes/ai_service_status.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notes",
+                                "ai_service_status.php"
+                            ]
+                        },
+                        "description": "Inspects AI provider configuration status (Groq, OpenAI, Gemini), reports active service, models, and setup guide."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Response has AI status and services list\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData).to.have.property('ai_configured');",
+                                    "    pm.expect(jsonData).to.have.property('supported_services');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "6.2 Generate AI Notes from Transcription",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"transcription_id\": {{transcription_id}},\n  \"subject\": \"Computer Science\",\n  \"course_code\": \"CS301\",\n  \"professor\": \"Prof. Sarah Chen\",\n  \"save_to_db\": true\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/notes/generate_ai_notes.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notes",
+                                "generate_ai_notes.php"
+                            ]
+                        },
+                        "description": "Calls AI language model (Groq / OpenAI / Gemini) using the saved transcription text from MySQL. If no key is set, returns 422 with AI_SERVICE_NOT_CONFIGURED instructions."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 201 or 422 (unconfigured)\", function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 422]);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "if (pm.response.code === 201 && jsonData.note_id) {",
+                                    "    pm.collectionVariables.set(\"ai_note_id\", jsonData.note_id);",
+                                    "    pm.test(\"Study notes structured correctly\", function () {",
+                                    "        pm.expect(jsonData.note).to.have.property('keyTakeaways');",
+                                    "        pm.expect(jsonData.note).to.have.property('importantTerms');",
+                                    "    });",
+                                    "} else if (pm.response.code === 422) {",
+                                    "    pm.test(\"Reports unconfigured AI service transparently\", function () {",
+                                    "        pm.expect(jsonData.error_code).to.eql(\"AI_SERVICE_NOT_CONFIGURED\");",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "6.3 Save Generated Study Notes",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"transcription_id\": {{transcription_id}},\n  \"title\": \"Database Normalization & Normal Forms\",\n  \"subject\": \"Computer Science\",\n  \"course_code\": \"CS301\",\n  \"tag\": \"AI notes\",\n  \"professor\": \"Prof. Sarah Chen\",\n  \"duration\": \"42 min\",\n  \"read_time\": \"6 min read\",\n  \"summary\": \"Normalization structures relational tables to eliminate redundancy and prevent insert, update, and delete anomalies. Progression flows through 1NF (atomic attributes), 2NF (full functional dependency), and 3NF (transitive dependency removal).\",\n  \"key_takeaways\": [\n    \"1NF enforces atomic cell values with no repeating groups.\",\n    \"2NF eliminates partial functional dependencies on composite keys.\",\n    \"3NF prevents transitive dependencies between non-key attributes.\"\n  ],\n  \"important_terms\": [\n    \"First Normal Form (1NF)\",\n    \"Second Normal Form (2NF)\",\n    \"Third Normal Form (3NF)\",\n    \"Functional Dependency\",\n    \"Transitive Dependency\"\n  ],\n  \"section1_title\": \"01 Motivation & Foundational Principles\",\n  \"section1_content\": \"Relational schemas require rigorous normalization to prevent data anomalies. When unnormalized tables duplicate rows, updates can create inconsistencies.\",\n  \"section2_title\": \"02 Breakdown of Normal Forms\",\n  \"section2_bullets\": [\n    \"1NF: Atomic values only; unique column names; each record must be unique.\",\n    \"2NF: In 1NF and all non-key attributes must be fully functionally dependent on the primary key.\",\n    \"3NF: In 2NF and no transitive functional dependency exists between non-key attributes.\"\n  ],\n  \"callout_title\": \"Key Invariant: Transitive Dependency\",\n  \"callout_content\": \"If X -> Y and Y -> Z, then X -> Z. In 3NF, non-key attribute Z cannot depend on non-key attribute Y.\",\n  \"section3_title\": \"03 Practical Application & Schema Design\",\n  \"section3_content1\": \"Decompose composite enrollment tables into independent entity relation tables with surrogate keys.\",\n  \"section3_content2\": \"Verify Boyce-Codd Normal Form (BCNF) when multiple candidate keys overlap.\",\n  \"footer_text\": \"AI Generated Study Notes · SmartNotes AI\",\n  \"service_used\": \"SmartNotes AI Generator\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/notes/save_generated_note.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notes",
+                                "save_generated_note.php"
+                            ]
+                        },
+                        "description": "Persists structured study notes into MySQL notes table linked to the transcription and authenticated user."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 201\", function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Note saved and returned with note_id\", function () {",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.note_id).to.be.a('number');",
+                                    "    pm.collectionVariables.set(\"ai_note_id\", jsonData.note_id);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "6.4 List AI Study Notes",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/notes/list_ai_notes.php?search=Normalization",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notes",
+                                "list_ai_notes.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "search",
+                                    "value": "Normalization"
+                                }
+                            ]
+                        },
+                        "description": "Lists all AI study notes generated for the authenticated user, joined with transcription and audio metadata."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Returns notes array with count\", function () {",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.notes).to.be.an('array');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "6.5 Get AI Study Note by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/notes/get_ai_notes.php?id={{ai_note_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notes",
+                                "get_ai_notes.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "id",
+                                    "value": "{{ai_note_id}}"
+                                }
+                            ]
+                        },
+                        "description": "Fetches single AI study note by note ID, decoding key takeaways, important terms / keywords, section headings, and linked transcription details."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Note details returned with arrays\", function () {",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.note.keyTakeaways).to.be.an('array');",
+                                    "    pm.expect(jsonData.note.importantTerms).to.be.an('array');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "6.6 Get AI Study Note by Transcription ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/notes/get_ai_notes.php?transcription_id={{transcription_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notes",
+                                "get_ai_notes.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "transcription_id",
+                                    "value": "{{transcription_id}}"
+                                }
+                            ]
+                        },
+                        "description": "Fetches the study note associated directly with a specific transcription ID."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "6.7 Update AI Study Note",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"id\": {{ai_note_id}},\n  \"title\": \"Database Normalization & Normal Forms (Reviewed)\",\n  \"isBookmarked\": true,\n  \"summary\": \"Comprehensive reviewed study guide on 1NF, 2NF, and 3NF with real-world decomposition examples.\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/notes/update_ai_note.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notes",
+                                "update_ai_note.php"
+                            ]
+                        },
+                        "description": "Updates fields of an existing AI study note, including title, summary, key takeaways, terms, and bookmark status."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Note updated successfully\", function () {",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "6.8 Delete AI Study Note",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"id\": {{ai_note_id}}\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/notes/delete_ai_note.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notes",
+                                "delete_ai_note.php"
+                            ]
+                        },
+                        "description": "Safely deletes an AI study note from MySQL ensuring user ownership verification."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Note deleted successfully\", function () {",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "7. Quiz Generation & Assessment",
+            "item": [
+                {
+                    "name": "7.1 Check Quiz Service Status",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/quiz/quiz_service_status.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "quiz",
+                                "quiz_service_status.php"
+                            ]
+                        },
+                        "description": "Inspects AI quiz service readiness across Groq Cloud, OpenAI, and Gemini; reports supported models and configuration guide."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Response has AI status and services list\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData).to.have.property('ai_configured');",
+                                    "    pm.expect(jsonData).to.have.property('supported_services');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "7.2 Generate Quiz from Note",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"note_id\": {{note_id}},\n  \"numberOfQuestions\": 5,\n  \"difficulty\": \"Moderate\",\n  \"question_type\": \"MCQ\",\n  \"save_to_db\": true\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/quiz/generate_quiz.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "quiz",
+                                "generate_quiz.php"
+                            ]
+                        },
+                        "description": "Calls AI model to generate 4-option multiple-choice quiz questions based directly on the saved study note content in MySQL."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 201 or 422 (unconfigured)\", function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 422]);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "if (pm.response.code === 201 && jsonData.quiz_id) {",
+                                    "    pm.collectionVariables.set(\"quiz_id\", jsonData.quiz_id);",
+                                    "    pm.test(\"Quiz questions returned\", function () {",
+                                    "        pm.expect(jsonData.questions).to.be.an('array');",
+                                    "        pm.expect(jsonData.questions[0].options).to.have.lengthOf(4);",
+                                    "    });",
+                                    "} else if (pm.response.code === 422) {",
+                                    "    pm.test(\"Reports unconfigured AI service transparently\", function () {",
+                                    "        pm.expect(jsonData.error_code).to.eql(\"AI_SERVICE_NOT_CONFIGURED\");",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "7.3 Save / Store Quiz & Questions",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"note_id\": {{note_id}},\n  \"title\": \"Database Normalization Mastery Quiz\",\n  \"subject\": \"Computer Science\",\n  \"difficulty\": \"Moderate\",\n  \"question_type\": \"MCQ\",\n  \"service_used\": \"SmartNotes AI Engine\",\n  \"questions\": [\n    {\n      \"question_number\": 1,\n      \"question_text\": \"Which change is required to bring a 1NF relation into 2NF?\",\n      \"topic\": \"Normal Forms\",\n      \"option_a\": \"Store multiple values in one cell\",\n      \"option_b\": \"Remove partial dependencies on a composite key\",\n      \"option_c\": \"Remove all transitive dependencies\",\n      \"option_d\": \"Merge every relation into one table\",\n      \"correct_option\": \"B\",\n      \"explanation\": \"Every non-key attribute must depend on the whole candidate key, eliminating partial dependencies.\"\n    },\n    {\n      \"question_number\": 2,\n      \"question_text\": \"What characterizes Third Normal Form (3NF)?\",\n      \"topic\": \"Transitive Dependency\",\n      \"option_a\": \"It allows non-key attributes to determine other non-key attributes\",\n      \"option_b\": \"It requires repeating groups in columns\",\n      \"option_c\": \"It is in 2NF and has no transitive dependencies between non-key attributes\",\n      \"option_d\": \"It eliminates primary keys completely\",\n      \"correct_option\": \"C\",\n      \"explanation\": \"3NF requires a relation to be in 2NF with no transitive dependency between non-key attributes.\"\n    },\n    {\n      \"question_number\": 3,\n      \"question_text\": \"What type of anomaly occurs when deleting a record inadvertently removes other unrelated data?\",\n      \"topic\": \"Data Anomalies\",\n      \"option_a\": \"Insertion anomaly\",\n      \"option_b\": \"Update anomaly\",\n      \"option_c\": \"Deletion anomaly\",\n      \"option_d\": \"Serialization anomaly\",\n      \"correct_option\": \"C\",\n      \"explanation\": \"A deletion anomaly occurs when deleting certain data causes the unintended loss of other valuable data.\"\n    },\n    {\n      \"question_number\": 4,\n      \"question_text\": \"If functional dependency X -> Y holds, what does this mathematically mean?\",\n      \"topic\": \"Functional Dependency\",\n      \"option_a\": \"Each value of X determines exactly one value of Y\",\n      \"option_b\": \"Each value of Y determines multiple values of X\",\n      \"option_c\": \"X and Y must be identical columns\",\n      \"option_d\": \"X must always be null\",\n      \"correct_option\": \"A\",\n      \"explanation\": \"A functional dependency X -> Y means each value of X uniquely determines a single value of Y.\"\n    },\n    {\n      \"question_number\": 5,\n      \"question_text\": \"Why are atomic values strictly required in First Normal Form (1NF)?\",\n      \"topic\": \"1NF Atomicity\",\n      \"option_a\": \"To increase storage requirements\",\n      \"option_b\": \"To prevent multivalued and repeating groups in single attributes\",\n      \"option_c\": \"To force using JSON strings only\",\n      \"option_d\": \"To disable foreign key indexing\",\n      \"correct_option\": \"B\",\n      \"explanation\": \"1NF requires each column attribute value to be atomic (indivisible) with no repeating groups.\"\n    }\n  ]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/quiz/save_quiz.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "quiz",
+                                "save_quiz.php"
+                            ]
+                        },
+                        "description": "Saves a structured 4-option quiz directly into MySQL quizzes and quiz_questions tables linked to the source note and user."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 201\", function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Quiz created with quiz_id and questions\", function () {",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.quiz_id).to.be.a('number');",
+                                    "    pm.collectionVariables.set(\"quiz_id\", jsonData.quiz_id);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "7.4 List Quizzes for User",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/quiz/list_quizzes.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "quiz",
+                                "list_quizzes.php"
+                            ]
+                        },
+                        "description": "Lists all quizzes for authenticated user with source note details, question count, and latest/best scores."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Returns quizzes array\", function () {",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.quizzes).to.be.an('array');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "7.5 Get Quiz & Questions",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/quiz/get_quiz.php?id={{quiz_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "quiz",
+                                "get_quiz.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "id",
+                                    "value": "{{quiz_id}}"
+                                }
+                            ]
+                        },
+                        "description": "Fetches single quiz header and all questions with options A, B, C, D formatted for Android Knowledge Check screen."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Quiz and questions populated\", function () {",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.questions).to.be.an('array');",
+                                    "    pm.expect(jsonData.questions[0].options).to.have.lengthOf(4);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "7.6 Submit Quiz Answers",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"quiz_id\": {{quiz_id}},\n  \"answers\": {\n    \"1\": \"B\",\n    \"2\": \"C\",\n    \"3\": \"C\",\n    \"4\": \"A\",\n    \"5\": \"A\"\n  }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/quiz/submit_quiz.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "quiz",
+                                "submit_quiz.php"
+                            ]
+                        },
+                        "description": "Evaluates user's answers against correct options, calculates percentage score, stores attempt, updates quizzes table, and returns review items."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Evaluation results calculated\", function () {",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.results).to.have.property('scorePercentage');",
+                                    "    pm.expect(jsonData.results).to.have.property('reviewItems');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "7.7 View Quiz Attempts History",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/quiz/get_quiz_attempts.php?quiz_id={{quiz_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "quiz",
+                                "get_quiz_attempts.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "quiz_id",
+                                    "value": "{{quiz_id}}"
+                                }
+                            ]
+                        },
+                        "description": "Allows users to view previous attempts, scores, and question review breakdowns for a quiz."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Returns attempts array\", function () {",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.attempts).to.be.an('array');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "7.8 Delete Quiz",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"id\": {{quiz_id}}\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/quiz/delete_quiz.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "quiz",
+                                "delete_quiz.php"
+                            ]
+                        },
+                        "description": "Safely deletes a quiz, cascading deletion to associated quiz_questions and quiz_attempts."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Quiz deleted successfully\", function () {",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "8. Study Progress & Performance",
+            "item": [
+                {
+                    "name": "8.1 Get Study Progress Overview",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/progress/get_progress.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "progress",
+                                "get_progress.php"
+                            ]
+                        },
+                        "description": "Fetches overall study progress percentage, total notes created, completed quizzes, average quiz score, study streak, and subject breakdown."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Progress data populated with real stats\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.progress).to.have.property('totalNotes');",
+                                    "    pm.expect(jsonData.progress).to.have.property('averageQuizScore');",
+                                    "    pm.expect(jsonData.progress).to.have.property('overallProgressPercentage');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "8.2 Get Performance Analytics",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/progress/get_performance.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "progress",
+                                "get_performance.php"
+                            ]
+                        },
+                        "description": "Fetches detailed performance analytics including average score, best score, latest score, accuracy rate, subject-wise breakdown, and difficulty metrics."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Performance details populated\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.performance).to.have.property('overallAccuracy');",
+                                    "    pm.expect(jsonData.performance).to.have.property('subjectPerformance');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "8.3 Get Activity Timeline & Streak",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/progress/get_activity_timeline.php?days=14",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "progress",
+                                "get_activity_timeline.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "days",
+                                    "value": "14"
+                                }
+                            ]
+                        },
+                        "description": "Tracks day-by-day learning activities (notes, audio, quizzes) over time and calculates current consecutive study streak."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Activity timeline populated\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.timeline).to.be.an('array');",
+                                    "    pm.expect(jsonData).to.have.property('studyStreakDays');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "8.4 Get Recent Study Activities",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/progress/get_recent_activities.php?limit=10",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "progress",
+                                "get_recent_activities.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        },
+                        "description": "Retrieves unified chronological study activities across note creations, quiz completions, and audio uploads."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Recent activities array returned\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.activities).to.be.an('array');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "8.5 Synchronize Progress Data in MySQL",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/progress/update_progress.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "progress",
+                                "update_progress.php"
+                            ]
+                        },
+                        "description": "Triggers recalculation and persists the latest progress snapshot into MySQL user_study_progress table."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Progress synchronized in MySQL\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.progress).to.have.property('overallProgressPercentage');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "9. Notifications & Study Reminders",
+            "item": [
+                {
+                    "name": "1. Create Study Reminder",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 201 Created\", function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Response indicates success\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.reminder_id).to.be.above(0);",
+                                    "});",
+                                    "if (jsonData.reminder_id) {",
+                                    "    pm.collectionVariables.set(\"reminder_id\", jsonData.reminder_id);",
+                                    "}",
+                                    "if (jsonData.notification_id) {",
+                                    "    pm.collectionVariables.set(\"notification_id\", jsonData.notification_id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"user_id\": \"{{user_id}}\",\n    \"title\": \"Review Normalization Normal Forms (3NF \\/ BCNF)\",\n    \"description\": \"Revise lossless joins, functional dependencies, and solve practice questions.\",\n    \"reminder_date\": \"2026-11-04\",\n    \"reminder_time\": \"15:30:00\",\n    \"note_id\": \"{{note_id}}\",\n    \"repeat_frequency\": \"once\",\n    \"create_notification\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/notifications/create_reminder.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notifications",
+                                "create_reminder.php"
+                            ]
+                        },
+                        "description": "Creates a study reminder scheduled for a specific date and time, linked to the user's note and logs an in-app alert notification."
+                    }
+                },
+                {
+                    "name": "2. List Study Reminders",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Response has summary and reminders array\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.summary).to.be.an(\"object\");",
+                                    "    pm.expect(jsonData.reminders).to.be.an(\"array\");",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/notifications/list_reminders.php?user_id={{user_id}}&status=all",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notifications",
+                                "list_reminders.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "user_id",
+                                    "value": "{{user_id}}"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "all"
+                                }
+                            ]
+                        },
+                        "description": "Fetches all study reminders for the user with formatted dates, times, overdue calculations, and joined note info."
+                    }
+                },
+                {
+                    "name": "3. Filter Reminders by Status (Pending)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"All returned reminders are pending\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    jsonData.reminders.forEach(function(item) {",
+                                    "        pm.expect(item.status).to.eql(\"pending\");",
+                                    "    });",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/notifications/list_reminders.php?user_id={{user_id}}&status=pending",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notifications",
+                                "list_reminders.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "user_id",
+                                    "value": "{{user_id}}"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "pending"
+                                }
+                            ]
+                        },
+                        "description": "Filters study reminders returning only pending reminders."
+                    }
+                },
+                {
+                    "name": "4. Update Study Reminder",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Reminder updated to completed\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.reminder.status).to.eql(\"completed\");",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"reminder_id\": \"{{reminder_id}}\",\n    \"title\": \"Mastered Normalization & Practice Questions\",\n    \"status\": \"completed\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/notifications/update_reminder.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notifications",
+                                "update_reminder.php"
+                            ]
+                        },
+                        "description": "Updates reminder title, schedule or status. Transitioning to completed triggers a goal completion notification."
+                    }
+                },
+                {
+                    "name": "5. List In-App Notifications",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Returns unread_count and notification array\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.notifications).to.be.an(\"array\");",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/notifications/list_notifications.php?user_id={{user_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notifications",
+                                "list_notifications.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "user_id",
+                                    "value": "{{user_id}}"
+                                }
+                            ]
+                        },
+                        "description": "Fetches the notification history with relative time labels (e.g. 10m ago, 2h ago, Yesterday) and timeText matching Android UI dialog."
+                    }
+                },
+                {
+                    "name": "6. Mark All Notifications as Read",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Unread count is reset to 0\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.unread_count).to.eql(0);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"user_id\": \"{{user_id}}\",\n    \"mark_all\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/notifications/mark_notification.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notifications",
+                                "mark_notification.php"
+                            ]
+                        },
+                        "description": "Marks all unread notifications for the user as read. Powering the \"Mark All as Read\" button in Android."
+                    }
+                },
+                {
+                    "name": "7. Get Notification & Push Service Status",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Contains badge_count and push_service requirements\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData).to.have.property(\"badge_count\");",
+                                    "    pm.expect(jsonData.push_service).to.be.an(\"object\");",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/notifications/notification_status.php?user_id={{user_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notifications",
+                                "notification_status.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "user_id",
+                                    "value": "{{user_id}}"
+                                }
+                            ]
+                        },
+                        "description": "Provides header notification bell badge count, reminder counts, and transparent push service (FCM) credentials inspection."
+                    }
+                },
+                {
+                    "name": "8. Delete Study Reminder",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Reminder deleted safely\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/notifications/delete_reminder.php?reminder_id={{reminder_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notifications",
+                                "delete_reminder.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "reminder_id",
+                                    "value": "{{reminder_id}}"
+                                }
+                            ]
+                        },
+                        "description": "Deletes the specified study reminder. Notifications associated with the reminder have their foreign key set to NULL, preserving notification history."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "10. File Management",
+            "item": [
+                {
+                    "name": "1. Upload Study Document (Multipart)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 201 Created\", function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Upload response indicates success\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.file_id).to.be.above(0);",
+                                    "});",
+                                    "if (jsonData.file_id) {",
+                                    "    pm.collectionVariables.set(\"file_id\", jsonData.file_id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "src": ""
+                                },
+                                {
+                                    "key": "title",
+                                    "value": "Database Normalization Reference Guide",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "note_id",
+                                    "value": "{{note_id}}",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "user_id",
+                                    "value": "{{user_id}}",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/files/upload_file.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "files",
+                                "upload_file.php"
+                            ]
+                        },
+                        "description": "Uploads study documents (PDF, DOCX, PPTX, XLSX, TXT, Images) using multipart/form-data. Stores files safely on server disk and registers metadata in MySQL."
+                    }
+                },
+                {
+                    "name": "2. Upload Document (Base64 JSON)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 201 Created\", function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Base64 upload succeeds\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.file_id).to.be.above(0);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"user_id\": \"{{user_id}}\",\n    \"title\": \"Relational Algebra Reference Sheet\",\n    \"file_name\": \"relational_algebra_cheatsheet.txt\",\n    \"file_base64\": \"UmVsYXRpb25hbCBBbGdlYnJhIE9wZXJhdGlvbnM6IFNlbGVjdCwgUHJvamVjdCwgSm9pbiwgVW5pb24sIERpZmZlcmVuY2UsIENhcnRlc2lhbiBQcm9kdWN0Lg==\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/files/upload_file.php",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "files",
+                                "upload_file.php"
+                            ]
+                        },
+                        "description": "Uploads documents via Base64 JSON payload. Useful for cross-platform clients, mobile serialization, or automated scripts."
+                    }
+                },
+                {
+                    "name": "3. List User Files",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Returns user files and storage summary\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.summary).to.be.an(\"object\");",
+                                    "    pm.expect(jsonData.files).to.be.an(\"array\");",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/files/list_files.php?user_id={{user_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "files",
+                                "list_files.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "user_id",
+                                    "value": "{{user_id}}"
+                                }
+                            ]
+                        },
+                        "description": "Lists all study documents belonging to the authenticated user with human-friendly sizes, dates, and category summary."
+                    }
+                },
+                {
+                    "name": "4. Filter Files by Category",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"Filtered files match category\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/files/list_files.php?user_id={{user_id}}&category=document",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "files",
+                                "list_files.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "user_id",
+                                    "value": "{{user_id}}"
+                                },
+                                {
+                                    "key": "category",
+                                    "value": "document"
+                                }
+                            ]
+                        },
+                        "description": "Filters files by category (document, presentation, spreadsheet, image, archive)."
+                    }
+                },
+                {
+                    "name": "5. Get File Details",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"File details retrieved\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.file).to.be.an(\"object\");",
+                                    "    pm.expect(jsonData.file.physical_file_exists).to.be.true;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/files/get_file.php?file_id={{file_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "files",
+                                "get_file.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "file_id",
+                                    "value": "{{file_id}}"
+                                }
+                            ]
+                        },
+                        "description": "Fetches detailed metadata of a single file with ownership verification and physical disk existence check."
+                    }
+                },
+                {
+                    "name": "6. Download / Access File",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Content-Disposition is attachment\", function () {",
+                                    "    pm.expect(pm.response.headers.get(\"Content-Disposition\")).to.include(\"attachment\");",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/files/download_file.php?file_id={{file_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "files",
+                                "download_file.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "file_id",
+                                    "value": "{{file_id}}"
+                                }
+                            ]
+                        },
+                        "description": "Streams the physical file to the authorized user with Content-Disposition: attachment. Rejects unauthorized or unauthenticated users with 401/403."
+                    }
+                },
+                {
+                    "name": "7. Preview File Inline",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Content-Disposition is inline\", function () {",
+                                    "    pm.expect(pm.response.headers.get(\"Content-Disposition\")).to.include(\"inline\");",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/files/download_file.php?file_id={{file_id}}&view=1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "files",
+                                "download_file.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "file_id",
+                                    "value": "{{file_id}}"
+                                },
+                                {
+                                    "key": "view",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "description": "Streams the file for inline viewing / in-app preview with Content-Disposition: inline (e.g. PDF viewer or image display)."
+                    }
+                },
+                {
+                    "name": "8. Delete File",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "var jsonData = pm.response.json();",
+                                    "pm.test(\"File deleted safely\", function () {",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.physical_file_deleted).to.be.true;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/files/delete_file.php?file_id={{file_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "files",
+                                "delete_file.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "file_id",
+                                    "value": "{{file_id}}"
+                                }
+                            ]
+                        },
+                        "description": "Deletes the file record from MySQL and unlinks the physical file from server storage. Enforces ownership."
+                    }
+                }
+            ]
         }
-      ]
-    },
-    {
-      "name": "4. Dashboard",
-      "description": "Calculates live statistics, total notes, subjects count, quizzes count, and recent notes.",
-      "item": [
-        {
-          "name": "4.1 Get Dashboard Stats",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/dashboard/dashboard_stats.php?user_id={{user_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["dashboard", "dashboard_stats.php"],
-              "query": [
-                {
-                  "key": "user_id",
-                  "value": "{{user_id}}"
-                }
-              ]
-            }
-          }
-        }
-      ]
-    }
-  ]
+    ]
 }

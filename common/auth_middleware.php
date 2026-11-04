@@ -37,6 +37,18 @@ function invalidateAuthToken($conn, $token) {
  * @return array|null The authenticated user array (with 'id', 'name', 'email') or null if optional.
  */
 function getAuthenticatedUser($conn, $required = true) {
+    // Normalize Authorization headers in environments where Apache strips HTTP_AUTHORIZATION
+    if (empty($_SERVER["HTTP_AUTHORIZATION"])) {
+        $reqHeaders = function_exists("getallheaders") ? getallheaders() : [];
+        foreach ($reqHeaders as $hKey => $hVal) {
+            if (strcasecmp($hKey, "Authorization") === 0) {
+                $_SERVER["HTTP_AUTHORIZATION"] = $hVal;
+            } elseif (strcasecmp($hKey, "X-Auth-Token") === 0) {
+                $_SERVER["HTTP_X_AUTH_TOKEN"] = $hVal;
+            }
+        }
+    }
+
     $token = null;
 
     // 1. Check Authorization: Bearer <token>
@@ -99,6 +111,7 @@ function getAuthenticatedUser($conn, $required = true) {
         return $user;
 
     } catch (PDOException $e) {
+        error_log("[Auth Middleware Error] " . $e->getMessage());
         http_response_code(500);
         echo json_encode([
             "success" => false,

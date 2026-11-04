@@ -53,7 +53,7 @@ if ($course === "" || $department === "" || !$semester || $semester < 1) {
         "message" => "Course, department, and valid semester are required"
     ]);
     exit;
-}
+}   
 
 try {
     // Check user exists
@@ -117,9 +117,10 @@ try {
     ]);
 
 } catch (PDOException $e) {
+    error_log("[Profile Edit Database Error] " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         "success" => false,
-        "message" => "Unable to update profile: " . $e->getMessage()
+        "message" => "An internal error occurred while updating profile. Please try again."
     ]);
 }

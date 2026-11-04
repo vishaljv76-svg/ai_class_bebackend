@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS `student_profiles` (
   `course` VARCHAR(150) DEFAULT NULL,
   `department` VARCHAR(150) DEFAULT NULL,
   `semester` INT(11) DEFAULT NULL,
+  `profile_image` VARCHAR(255) DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_profile_user_id` (`user_id`),
@@ -58,6 +59,7 @@ CREATE TABLE IF NOT EXISTS `student_profiles` (
 CREATE TABLE IF NOT EXISTS `notes` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `user_id` INT(11) NOT NULL,
+  `transcription_id` INT(11) DEFAULT NULL,
   `title` VARCHAR(255) NOT NULL,
   `subject` VARCHAR(150) NOT NULL DEFAULT 'Computer Science',
   `course_code` VARCHAR(50) DEFAULT 'CS301',
@@ -80,13 +82,16 @@ CREATE TABLE IF NOT EXISTS `notes` (
   `section3_content1` TEXT DEFAULT NULL,
   `section3_content2` TEXT DEFAULT NULL,
   `footer_text` VARCHAR(255) DEFAULT NULL,
+  `ai_service_used` VARCHAR(100) DEFAULT NULL,
   `is_bookmarked` TINYINT(1) NOT NULL DEFAULT 0,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_notes_user_created` (`user_id`, `created_at`),
   KEY `idx_notes_subject` (`subject`),
-  CONSTRAINT `fk_notes_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  KEY `idx_notes_transcription` (`transcription_id`),
+  CONSTRAINT `fk_notes_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_notes_transcription` FOREIGN KEY (`transcription_id`) REFERENCES `transcriptions` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -129,10 +134,189 @@ CREATE TABLE IF NOT EXISTS `quizzes` (
   `correct_count` INT(11) NOT NULL DEFAULT 0,
   `total_questions` INT(11) NOT NULL DEFAULT 5,
   `difficulty` VARCHAR(50) DEFAULT 'Moderate',
+  `question_type` VARCHAR(50) DEFAULT 'MCQ',
+  `ai_service_used` VARCHAR(100) DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_quizzes_user` (`user_id`),
-  CONSTRAINT `fk_quizzes_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  KEY `idx_quizzes_note` (`note_id`),
+  CONSTRAINT `fk_quizzes_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_quizzes_note` FOREIGN KEY (`note_id`) REFERENCES `notes` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- 7a. Table structure for table `quiz_questions`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `quiz_questions` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `quiz_id` INT(11) NOT NULL,
+  `question_number` INT(11) NOT NULL,
+  `question_text` TEXT NOT NULL,
+  `option_a` TEXT NOT NULL,
+  `option_b` TEXT NOT NULL,
+  `option_c` TEXT NOT NULL,
+  `option_d` TEXT NOT NULL,
+  `correct_option` VARCHAR(10) NOT NULL,
+  `explanation` TEXT DEFAULT NULL,
+  `topic` VARCHAR(255) DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_quiz_questions_quiz` (`quiz_id`),
+  CONSTRAINT `fk_quiz_questions_quiz` FOREIGN KEY (`quiz_id`) REFERENCES `quizzes` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- 7b. Table structure for table `quiz_attempts`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `quiz_attempts` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `quiz_id` INT(11) NOT NULL,
+  `user_id` INT(11) NOT NULL,
+  `score_percentage` INT(11) NOT NULL DEFAULT 0,
+  `correct_count` INT(11) NOT NULL DEFAULT 0,
+  `total_questions` INT(11) NOT NULL DEFAULT 0,
+  `answers_json` LONGTEXT NOT NULL,
+  `review_json` LONGTEXT DEFAULT NULL,
+  `feedback_header` VARCHAR(255) DEFAULT NULL,
+  `feedback_text` TEXT DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_quiz_attempts_quiz` (`quiz_id`),
+  KEY `idx_quiz_attempts_user` (`user_id`),
+  CONSTRAINT `fk_quiz_attempts_quiz` FOREIGN KEY (`quiz_id`) REFERENCES `quizzes` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_quiz_attempts_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- 8. Table structure for table `audio_files`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `audio_files` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `user_id` INT(11) NOT NULL,
+  `title` VARCHAR(255) DEFAULT NULL,
+  `file_name` VARCHAR(255) NOT NULL,
+  `stored_name` VARCHAR(255) NOT NULL,
+  `file_path` VARCHAR(255) NOT NULL,
+  `file_size` BIGINT(20) NOT NULL,
+  `file_type` VARCHAR(100) NOT NULL,
+  `file_extension` VARCHAR(20) NOT NULL,
+  `duration` VARCHAR(50) DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_audio_user` (`user_id`, `created_at`),
+  CONSTRAINT `fk_audio_files_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- 9. Table structure for table `transcriptions`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `transcriptions` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `user_id` INT(11) NOT NULL,
+  `audio_id` INT(11) NOT NULL,
+  `lecture_title` VARCHAR(255) DEFAULT NULL,
+  `language` VARCHAR(50) DEFAULT 'English',
+  `duration` VARCHAR(50) DEFAULT NULL,
+  `confidence` DECIMAL(5,2) DEFAULT NULL,
+  `full_transcript` LONGTEXT NOT NULL,
+  `paragraphs_json` LONGTEXT DEFAULT NULL,
+  `status` VARCHAR(50) DEFAULT 'completed',
+  `service_used` VARCHAR(100) DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_transcription_user` (`user_id`, `created_at`),
+  KEY `idx_transcription_audio` (`audio_id`),
+  CONSTRAINT `fk_transcription_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_transcription_audio` FOREIGN KEY (`audio_id`) REFERENCES `audio_files` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- 10. Table structure for table `user_study_progress`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `user_study_progress` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `user_id` INT(11) NOT NULL,
+  `total_notes` INT(11) NOT NULL DEFAULT 0,
+  `total_quizzes_completed` INT(11) NOT NULL DEFAULT 0,
+  `average_quiz_score` DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+  `total_study_time_minutes` INT(11) NOT NULL DEFAULT 0,
+  `study_streak_days` INT(11) NOT NULL DEFAULT 0,
+  `overall_progress_percentage` INT(11) NOT NULL DEFAULT 0,
+  `mastery_level` VARCHAR(50) DEFAULT 'Beginner',
+  `last_activity_at` DATETIME DEFAULT NULL,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_progress_user` (`user_id`),
+  CONSTRAINT `fk_progress_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- 11. Table structure for table `study_reminders`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `study_reminders` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `user_id` INT(11) NOT NULL,
+  `note_id` INT(11) DEFAULT NULL,
+  `title` VARCHAR(255) NOT NULL,
+  `description` TEXT DEFAULT NULL,
+  `reminder_date` DATE NOT NULL,
+  `reminder_time` TIME NOT NULL,
+  `status` ENUM('pending', 'completed', 'cancelled') NOT NULL DEFAULT 'pending',
+  `repeat_frequency` VARCHAR(50) DEFAULT 'once',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_reminders_user_date` (`user_id`, `reminder_date`, `status`),
+  KEY `idx_reminders_note` (`note_id`),
+  CONSTRAINT `fk_reminders_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_reminders_note` FOREIGN KEY (`note_id`) REFERENCES `notes` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- 12. Table structure for table `notifications`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `notifications` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `user_id` INT(11) NOT NULL,
+  `reminder_id` INT(11) DEFAULT NULL,
+  `title` VARCHAR(255) NOT NULL,
+  `message` TEXT NOT NULL,
+  `type` VARCHAR(50) NOT NULL DEFAULT 'study_reminder',
+  `is_read` TINYINT(1) NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_notifications_user_read` (`user_id`, `is_read`, `created_at`),
+  KEY `idx_notifications_reminder` (`reminder_id`),
+  CONSTRAINT `fk_notifications_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_notifications_reminder` FOREIGN KEY (`reminder_id`) REFERENCES `study_reminders` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- 13. Table structure for table `study_files`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `study_files` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `user_id` INT(11) NOT NULL,
+  `note_id` INT(11) DEFAULT NULL,
+  `title` VARCHAR(255) DEFAULT NULL,
+  `file_name` VARCHAR(255) NOT NULL,
+  `stored_name` VARCHAR(255) NOT NULL,
+  `file_path` VARCHAR(255) NOT NULL,
+  `file_size` BIGINT(20) NOT NULL,
+  `file_type` VARCHAR(100) NOT NULL,
+  `file_extension` VARCHAR(20) NOT NULL,
+  `category` VARCHAR(50) DEFAULT 'document',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_files_user` (`user_id`, `created_at`),
+  KEY `idx_files_extension` (`file_extension`),
+  KEY `idx_files_note` (`note_id`),
+  CONSTRAINT `fk_study_files_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_study_files_note` FOREIGN KEY (`note_id`) REFERENCES `notes` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------

@@ -1,0 +1,47 @@
+# ========================================================
+# SmartNotes AI Backend Security Configuration
+# ========================================================
+
+# 1. Disable Public Directory Listing
+Options -Indexes
+
+# 2. Block direct HTTP access to sensitive database dumps, backups and configs
+<FilesMatch "(?i)\.(sql|bak|backup|env|log|bat|cmd|sh|ini|yml|yaml)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Allow,Deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# 3. Block direct HTTP access to hidden files and directories (.git, .env, .idea, etc.)
+<FilesMatch "^\.">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Allow,Deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# 4. Block direct access to sensitive credentials
+<Files "firebase_credentials.json">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Allow,Deny
+        Deny from all
+    </IfModule>
+</Files>
+
+# 5. Security HTTP Headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

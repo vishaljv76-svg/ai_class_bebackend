@@ -112,10 +112,11 @@ try {
     ]);
 
 } catch (PDOException $e) {
+    error_log("[Reset Password Database Error] " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         "success" => false,
-        "message" => "Unable to reset password: " . $e->getMessage()
+        "message" => "An internal error occurred while resetting password. Please try again."
     ]);
 }
 

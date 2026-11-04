@@ -66,10 +66,11 @@ try {
     ]);
 
 } catch (PDOException $e) {
+    error_log("[Forgot Password Database Error] " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         "success" => false,
-        "message" => "Password reset request failed: " . $e->getMessage()
+        "message" => "An internal error occurred while processing password reset. Please try again."
     ]);
 }
 

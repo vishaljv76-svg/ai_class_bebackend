@@ -98,9 +98,10 @@ try {
     ]);
 
 } catch (PDOException $e) {
+    error_log("[Login Database Error] " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         "success" => false,
-        "message" => "Login failed: " . $e->getMessage()
+        "message" => "An internal database error occurred. Please try again later."
     ]);
 }

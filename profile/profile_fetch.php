@@ -42,7 +42,8 @@ try {
                 p.id AS profile_id,
                 p.course,
                 p.department,
-                p.semester
+                p.semester,
+                p.profile_image
              FROM users u
              LEFT JOIN student_profiles p ON u.id = p.user_id
              WHERE u.id = ?"
@@ -57,7 +58,8 @@ try {
                 p.id AS profile_id,
                 p.course,
                 p.department,
-                p.semester
+                p.semester,
+                p.profile_image
              FROM users u
              LEFT JOIN student_profiles p ON u.id = p.user_id
              WHERE u.email = ?"
@@ -88,7 +90,8 @@ try {
             "department" => $row["department"] ?? "",
             "semester" => $sem,
             "semester_badge" => $sem ? "Semester " . $sem : "",
-            "year_badge" => getYearBadge($sem)
+            "year_badge" => getYearBadge($sem),
+            "profile_image" => $row["profile_image"] ?? null
         ];
     }
 
@@ -101,15 +104,17 @@ try {
             "id" => (int)$row["user_id"],
             "name" => $row["name"],
             "email" => $row["email"],
-            "initials" => getInitials($row["name"])
+            "initials" => getInitials($row["name"]),
+            "profile_image" => $row["profile_image"] ?? null
         ],
         "profile" => $profile
     ]);
 
 } catch (PDOException $e) {
+    error_log("[Profile Fetch Database Error] " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         "success" => false,
-        "message" => "Unable to fetch profile: " . $e->getMessage()
+        "message" => "An internal error occurred while fetching profile. Please try again."
     ]);
 }

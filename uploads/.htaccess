@@ -1,0 +1,13 @@
+# Prevent public directory indexing
+Options -Indexes
+
+# Prevent PHP script execution in uploaded files directory (anti-RCE protection)
+<FilesMatch "(?i)\.(php|phtml|php3|php4|php5|php7|phps|cgi|pl|py|sh|exe|bat|cmd)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Allow,Deny
+        Deny from all
+    </IfModule>
+</FilesMatch>

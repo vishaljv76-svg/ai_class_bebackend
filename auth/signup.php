@@ -107,9 +107,10 @@ try {
     ]);
 
 } catch (PDOException $e) {
+    error_log("[Signup Database Error] " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         "success" => false,
-        "message" => "Signup failed: " . $e->getMessage()
+        "message" => "An internal database error occurred during registration. Please try again."
     ]);
 }

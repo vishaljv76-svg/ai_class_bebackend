@@ -1,18 +1,21 @@
 <?php
 // CORS headers for Android App, Web & API clients
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+if (!headers_sent()) {
+    header("Access-Control-Allow-Origin: *");
+    header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Auth-Token");
+}
 
-if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
+if (isset($_SERVER["REQUEST_METHOD"]) && $_SERVER["REQUEST_METHOD"] === "OPTIONS") {
     http_response_code(200);
     exit;
 }
 
-$host = "localhost";
-$dbname = "ai_class";
-$username = "root";
-$password = "";
+// Database Credentials (with Environment Variable Override Support)
+$host = getenv('DB_HOST') ?: "localhost";
+$dbname = getenv('DB_NAME') ?: "ai_class";
+$username = getenv('DB_USER') ?: "root";
+$password = getenv('DB_PASS') !== false ? getenv('DB_PASS') : "";
 
 try {
     $conn = new PDO(
@@ -37,12 +40,35 @@ try {
         $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         $conn->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
     } catch (PDOException $e2) {
-        header("Content-Type: application/json");
-        http_response_code(500);
+        error_log("[Database Connection Error]: " . $e2->getMessage());
+        if (!headers_sent()) {
+            header("Content-Type: application/json; charset=UTF-8");
+            http_response_code(500);
+        }
         echo json_encode([
             "success" => false,
-            "message" => "Database connection failed"
-        ]);
+            "message" => "Database connection failed. Please verify database server is running."
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+}
+
+/**
+ * Helper to emit standardized safe JSON error responses without leaking internal server/SQL traces
+ */
+if (!function_exists('sendSafeJsonError')) {
+    function sendSafeJsonError(int $httpCode, string $publicMessage, ?Throwable $e = null) {
+        if ($e !== null) {
+            error_log("[SmartNotes Backend Error] " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
+        }
+        if (!headers_sent()) {
+            header("Content-Type: application/json; charset=UTF-8");
+            http_response_code($httpCode);
+        }
+        echo json_encode([
+            "success" => false,
+            "message" => $publicMessage
+        ], JSON_UNESCAPED_UNICODE);
         exit;
     }
 }
