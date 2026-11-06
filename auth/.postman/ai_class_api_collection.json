@@ -68,8 +68,13 @@
             },
             "url": {
               "raw": "{{base_url}}/auth/signup.php",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "signup.php"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "signup.php"
+              ]
             },
             "description": "Registers a new user.\n\nMapped to: `ui/signup/SignupScreen.kt`\nAccepts both `name` and `studentName`, `confirm_password` and `confirmPassword`.\nReturns `user_id` and full `user` object with initials."
           },
@@ -109,8 +114,13 @@
             },
             "url": {
               "raw": "{{base_url}}/auth/login.php",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "login.php"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login.php"
+              ]
             },
             "description": "Authenticates a student.\n\nMapped to: `ui/login/LoginScreen.kt`\nReturns user details (`id`, `name`, `email`, `initials`) and `has_profile` with profile details so the app knows whether to route to StudentOnboarding or HomeDashboard."
           },
@@ -149,8 +159,13 @@
             },
             "url": {
               "raw": "{{base_url}}/auth/forgot_password.php",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "forgot_password.php"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "forgot_password.php"
+              ]
             },
             "description": "Initiates password reset.\n\nMapped to: `ui/forgotpassword/ForgotPasswordScreen.kt`\nGenerates a 6-digit reset token valid for 30 minutes (matching the screen text: 'The reset link expires in 30 minutes'). In development/testing, returns `reset_token` in response for immediate use."
           },
@@ -185,8 +200,13 @@
             },
             "url": {
               "raw": "{{base_url}}/auth/reset_password.php",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "reset_password.php"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "reset_password.php"
+              ]
             },
             "description": "Completes password reset with the code generated from Forgot Password.\n\nVerifies the reset token, updates hashed password in database, and clears the token."
           },
@@ -227,8 +247,13 @@
             },
             "url": {
               "raw": "{{base_url}}/profile/profile_add.php",
-              "host": ["{{base_url}}"],
-              "path": ["profile", "profile_add.php"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "profile",
+                "profile_add.php"
+              ]
             },
             "description": "Saves student academic profile during onboarding.\n\nMapped to: `ui/onboarding/StudentOnboardingScreen.kt`\nAccepts both `userId`/`user_id`, `selectedCourse`/`course`, `selectedDepartment`/`department`, and string semester (e.g., 'Semester 7 · Final year') or int `7`.\nPerforms upsert so re-submitting won't fail with 409."
           },
@@ -263,8 +288,13 @@
             },
             "url": {
               "raw": "{{base_url}}/profile/profile_edit.php",
-              "host": ["{{base_url}}"],
-              "path": ["profile", "profile_edit.php"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "profile",
+                "profile_edit.php"
+              ]
             },
             "description": "Edits existing student profile and name.\n\nMapped to: `ui/profile/ProfileSettingsScreen.kt`\nAllows updating academic details as well as student name."
           },
@@ -290,8 +320,13 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/profile/profile_fetch.php?user_id={{user_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["profile", "profile_fetch.php"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "profile",
+                "profile_fetch.php"
+              ],
               "query": [
                 {
                   "key": "user_id",
@@ -323,8 +358,13 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/profile/profile_fetch.php?email={{test_email}}",
-              "host": ["{{base_url}}"],
-              "path": ["profile", "profile_fetch.php"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "profile",
+                "profile_fetch.php"
+              ],
               "query": [
                 {
                   "key": "email",
@@ -340,4 +380,3 @@
     }
   ]
 }
-
