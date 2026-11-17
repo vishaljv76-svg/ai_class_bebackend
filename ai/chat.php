@@ -140,6 +140,58 @@ try {
     }
 
     // =========================================================================
+    // ACTION: delete_conversation (Delete a conversation and its messages)
+    // =========================================================================
+    if ($action === "delete_conversation") {
+        $conversationId = filter_var($data["conversation_id"] ?? $data["conversationId"] ?? null, FILTER_VALIDATE_INT);
+        if (!$conversationId || $conversationId < 1) {
+            http_response_code(400);
+            echo json_encode([
+                "success" => false,
+                "error_code" => "INVALID_CONVERSATION_ID",
+                "message" => "A valid conversation_id is required to delete a conversation."
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        // Verify conversation ownership
+        $convStmt = $conn->prepare("SELECT id, user_id FROM ai_chat_conversations WHERE id = ?");
+        $convStmt->execute([$conversationId]);
+        $conversation = $convStmt->fetch();
+
+        if (!$conversation) {
+            http_response_code(404);
+            echo json_encode([
+                "success" => false,
+                "error_code" => "CONVERSATION_NOT_FOUND",
+                "message" => "Conversation not found."
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        if ((int)$conversation["user_id"] !== $userId) {
+            http_response_code(403);
+            echo json_encode([
+                "success" => false,
+                "error_code" => "FORBIDDEN",
+                "message" => "You do not have permission to delete this conversation."
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        // Delete conversation (foreign key cascade removes associated messages in ai_chat_messages)
+        $delStmt = $conn->prepare("DELETE FROM ai_chat_conversations WHERE id = ? AND user_id = ?");
+        $delStmt->execute([$conversationId, $userId]);
+
+        echo json_encode([
+            "success" => true,
+            "message" => "Conversation deleted successfully.",
+            "deleted_conversation_id" => $conversationId
+        ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        exit;
+    }
+
+    // =========================================================================
     // ACTION: send_message (Default flow)
     // =========================================================================
     $messageText = trim((string)($data["message"] ?? $data["question"] ?? ""));

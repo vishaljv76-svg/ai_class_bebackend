@@ -4,6 +4,7 @@ header("Content-Type: application/json; charset=UTF-8");
 require_once __DIR__ . "/../config/config.php";
 require_once __DIR__ . "/../config/quiz_config.php";
 require_once __DIR__ . "/../common/auth_middleware.php";
+require_once __DIR__ . "/../ai/ai_provider_service.php";
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     http_response_code(405);
@@ -47,26 +48,27 @@ if (!$userId || $userId < 1) {
     exit;
 }
 
+$topic = trim((string)($data["topic"] ?? $data["subject"] ?? $data["topic_text"] ?? ""));
 $noteId = filter_var($data["note_id"] ?? $data["noteId"] ?? null, FILTER_VALIDATE_INT);
 
-if (!$noteId || $noteId < 1) {
+if ($topic === "" && (!$noteId || $noteId < 1)) {
     http_response_code(400);
     echo json_encode([
         "success" => false,
-        "message" => "Valid 'note_id' is required to generate quiz questions."
+        "message" => "Either 'topic' or 'note_id' is required to generate quiz questions."
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-$numQuestions = (int)($data["numberOfQuestions"] ?? $data["num_questions"] ?? $data["number_of_questions"] ?? 5);
-if ($numQuestions < 1) $numQuestions = 5;
-if ($numQuestions > 20) $numQuestions = 20;
+$numQuestions = (int)($data["numberOfQuestions"] ?? $data["num_questions"] ?? $data["number_of_questions"] ?? 10);
+if ($numQuestions < 1) $numQuestions = 10;
+if ($numQuestions > 50) $numQuestions = 50;
 
-$difficulty = trim($data["difficulty"] ?? "Moderate");
-$questionType = trim($data["question_type"] ?? $data["questionType"] ?? "MCQ");
+$difficulty = trim((string)($data["difficulty"] ?? "Medium"));
+$questionType = trim((string)($data["question_type"] ?? $data["questionType"] ?? "MCQ"));
 $saveToDb = isset($data["save_to_db"]) ? (bool)$data["save_to_db"] : (isset($data["saveToDb"]) ? (bool)$data["saveToDb"] : true);
-$customApiKey = trim($data["ai_api_key"] ?? ($_SERVER["HTTP_X_AI_API_KEY"] ?? ""));
-$serviceName = trim($data["service"] ?? "");
+$customApiKey = trim((string)($data["ai_api_key"] ?? ($_SERVER["HTTP_X_AI_API_KEY"] ?? "")));
+$serviceName = trim((string)($data["service"] ?? ""));
 
 try {
     // 1. Verify user exists
@@ -83,68 +85,93 @@ try {
         exit;
     }
 
-    // 2. Fetch note content
-    $noteStmt = $conn->prepare("SELECT * FROM notes WHERE id = ?");
-    $noteStmt->execute([$noteId]);
-    $note = $noteStmt->fetch();
+    $genQuiz = null;
+    $serviceUsed = "";
 
-    if (!$note) {
-        http_response_code(404);
-        echo json_encode([
-            "success" => false,
-            "message" => "Note not found for ID: " . $noteId
-        ], JSON_UNESCAPED_UNICODE);
-        exit;
+    if ($topic !== "") {
+        // --- 2A. Topic-Based Quiz Generation (Google Gemini) ---
+        $aiResult = generateTopicQuizWithGemini($topic, [
+            "num_questions" => $numQuestions,
+            "difficulty" => $difficulty,
+            "question_type" => $questionType
+        ]);
+
+        if (!$aiResult["success"]) {
+            http_response_code($aiResult["http_status"] ?? 502);
+            echo json_encode($aiResult, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            exit;
+        }
+
+        $genQuiz = $aiResult["quiz"];
+        $quizTitle = trim((string)($genQuiz["title"] ?? ("Quiz: " . $topic)));
+        $quizSubject = trim((string)($genQuiz["subject"] ?? $topic));
+        $questions = $genQuiz["questions"] ?? [];
+        $totalQuestions = count($questions);
+        $serviceUsed = $aiResult["service_used"] . " (" . $aiResult["model_used"] . ")";
+        $noteId = null; // Explicit null for topic quizzes
+    } else {
+        // --- 2B. Note-Based Quiz Generation (Existing flow) ---
+        $noteStmt = $conn->prepare("SELECT * FROM notes WHERE id = ?");
+        $noteStmt->execute([$noteId]);
+        $note = $noteStmt->fetch();
+
+        if (!$note) {
+            http_response_code(404);
+            echo json_encode([
+                "success" => false,
+                "message" => "Note not found for ID: " . $noteId
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        // User authorization check
+        if ((int)$note["user_id"] !== $userId) {
+            http_response_code(403);
+            echo json_encode([
+                "success" => false,
+                "message" => "Forbidden: You do not have permission to generate quizzes from this note."
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        // Validate substantive note content exists
+        $contentCheck = trim(($note["summary"] ?? "") . ($note["full_content"] ?? "") . ($note["section1_content"] ?? ""));
+        if ($contentCheck === "") {
+            http_response_code(400);
+            echo json_encode([
+                "success" => false,
+                "message" => "The source note has empty content. Cannot generate questions without study content."
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        $aiOptions = [
+            "api_key" => $customApiKey ?: null,
+            "service" => $serviceName ?: null,
+            "num_questions" => $numQuestions,
+            "difficulty" => $difficulty
+        ];
+
+        $aiResult = generateQuizWithLLM($note, $aiOptions);
+
+        if (!$aiResult["success"]) {
+            http_response_code($aiResult["http_status"] ?? 502);
+            echo json_encode($aiResult, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            exit;
+        }
+
+        $genQuiz = $aiResult["quiz"];
+        $quizTitle = trim((string)($genQuiz["title"] ?? ("Quiz: " . $note["title"])));
+        $quizSubject = trim((string)($genQuiz["subject"] ?? $note["subject"]));
+        $questions = $genQuiz["questions"] ?? [];
+        $totalQuestions = count($questions);
+        $serviceUsed = $aiResult["service_used"] . " (" . $aiResult["model_used"] . ")";
     }
-
-    // 3. User authorization check
-    if ((int)$note["user_id"] !== $userId) {
-        http_response_code(403);
-        echo json_encode([
-            "success" => false,
-            "message" => "Forbidden: You do not have permission to generate quizzes from this note."
-        ], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
-
-    // 4. Validate substantive note content exists
-    $contentCheck = trim(($note["summary"] ?? "") . ($note["full_content"] ?? "") . ($note["section1_content"] ?? ""));
-    if ($contentCheck === "") {
-        http_response_code(400);
-        echo json_encode([
-            "success" => false,
-            "message" => "The source note has empty content. Cannot generate questions without study content."
-        ], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
-
-    // 5. Generate quiz using AI service
-    $aiOptions = [
-        "api_key" => $customApiKey ?: null,
-        "service" => $serviceName ?: null,
-        "num_questions" => $numQuestions,
-        "difficulty" => $difficulty
-    ];
-
-    $aiResult = generateQuizWithLLM($note, $aiOptions);
-
-    if (!$aiResult["success"]) {
-        http_response_code($aiResult["http_status"] ?? 502);
-        echo json_encode($aiResult, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-        exit;
-    }
-
-    $genQuiz = $aiResult["quiz"];
-    $quizTitle = trim($genQuiz["title"] ?? ("Quiz: " . $note["title"]));
-    $quizSubject = trim($genQuiz["subject"] ?? $note["subject"]);
-    $questions = $genQuiz["questions"] ?? [];
-    $totalQuestions = count($questions);
-    $serviceUsed = $aiResult["service_used"] . " (" . $aiResult["model_used"] . ")";
 
     $newQuizId = null;
     $formattedQuestions = [];
 
-    // 6. Save in MySQL if requested
+    // 3. Save in MySQL if requested
     if ($saveToDb) {
         $conn->beginTransaction();
 
@@ -154,7 +181,7 @@ try {
             ) VALUES (?, ?, ?, ?, 0, 0, ?, ?, ?, ?)
         ");
         $quizInsert->execute([
-            $userId, $noteId, $quizTitle, $quizSubject, $totalQuestions, $difficulty, $questionType, $serviceUsed
+            $userId, $noteId ? $noteId : null, $quizTitle, $quizSubject, $totalQuestions, $difficulty, $questionType, $serviceUsed
         ]);
         $newQuizId = (int)$conn->lastInsertId();
 
@@ -166,19 +193,30 @@ try {
 
         foreach ($questions as $idx => $q) {
             $qNum = (int)($q["question_number"] ?? ($idx + 1));
-            $qText = trim($q["question_text"] ?? "");
-            $optA = trim($q["option_a"] ?? "");
-            $optB = trim($q["option_b"] ?? "");
-            $optC = trim($q["option_c"] ?? "");
-            $optD = trim($q["option_d"] ?? "");
-            $correctOpt = strtoupper(trim($q["correct_option"] ?? "A"));
-            $explanation = trim($q["explanation"] ?? "");
-            $topic = trim($q["topic"] ?? $note["subject"]);
+            $qText = trim((string)($q["question_text"] ?? ""));
+            $optA = trim((string)($q["option_a"] ?? ""));
+            $optB = trim((string)($q["option_b"] ?? ""));
+            $optC = trim((string)($q["option_c"] ?? ""));
+            $optD = trim((string)($q["option_d"] ?? ""));
+            $correctOpt = strtoupper(trim((string)($q["correct_option"] ?? "A")));
+            $explanation = trim((string)($q["explanation"] ?? ""));
+            $subTopic = trim((string)($q["topic"] ?? $quizSubject));
 
             $qInsert->execute([
-                $newQuizId, $qNum, $qText, $optA, $optB, $optC, $optD, $correctOpt, $explanation, $topic
+                $newQuizId, $qNum, $qText, $optA, $optB, $optC, $optD, $correctOpt, $explanation, $subTopic
             ]);
             $insertedQId = (int)$conn->lastInsertId();
+
+            $optionsList = [
+                ["optionKey" => "A", "text" => $optA],
+                ["optionKey" => "B", "text" => $optB]
+            ];
+            if ($optC !== "" && $optC !== "N/A") {
+                $optionsList[] = ["optionKey" => "C", "text" => $optC];
+            }
+            if ($optD !== "" && $optD !== "N/A") {
+                $optionsList[] = ["optionKey" => "D", "text" => $optD];
+            }
 
             $formattedQuestions[] = [
                 "id" => $insertedQId,
@@ -186,15 +224,11 @@ try {
                 "question_number" => $qNum,
                 "questionText" => $qText,
                 "question_text" => $qText,
-                "topic" => $topic,
-                "topicText" => "$topic · $quizSubject",
-                "instructionText" => "Choose one answer.",
-                "options" => [
-                    ["optionKey" => "A", "text" => $optA],
-                    ["optionKey" => "B", "text" => $optB],
-                    ["optionKey" => "C", "text" => $optC],
-                    ["optionKey" => "D", "text" => $optD]
-                ],
+                "topic" => $subTopic,
+                "topicText" => "$subTopic · $quizSubject",
+                "instructionText" => count($optionsList) <= 2 ? "Choose True or False." : "Choose one answer.",
+                "modeText" => "$difficulty · $questionType",
+                "options" => $optionsList,
                 "correctOption" => $correctOpt,
                 "correct_option" => $correctOpt,
                 "explanation" => $explanation
@@ -206,21 +240,40 @@ try {
         // Preview mode
         foreach ($questions as $idx => $q) {
             $qNum = (int)($q["question_number"] ?? ($idx + 1));
+            $qText = trim((string)($q["question_text"] ?? ""));
+            $optA = trim((string)($q["option_a"] ?? ""));
+            $optB = trim((string)($q["option_b"] ?? ""));
+            $optC = trim((string)($q["option_c"] ?? ""));
+            $optD = trim((string)($q["option_d"] ?? ""));
+            $correctOpt = strtoupper(trim((string)($q["correct_option"] ?? "A")));
+            $explanation = trim((string)($q["explanation"] ?? ""));
+            $subTopic = trim((string)($q["topic"] ?? $quizSubject));
+
+            $optionsList = [
+                ["optionKey" => "A", "text" => $optA],
+                ["optionKey" => "B", "text" => $optB]
+            ];
+            if ($optC !== "" && $optC !== "N/A") {
+                $optionsList[] = ["optionKey" => "C", "text" => $optC];
+            }
+            if ($optD !== "" && $optD !== "N/A") {
+                $optionsList[] = ["optionKey" => "D", "text" => $optD];
+            }
+
             $formattedQuestions[] = [
                 "id" => null,
                 "questionNumber" => $qNum,
                 "question_number" => $qNum,
-                "questionText" => trim($q["question_text"] ?? ""),
-                "topic" => trim($q["topic"] ?? $note["subject"]),
-                "instructionText" => "Choose one answer.",
-                "options" => [
-                    ["optionKey" => "A", "text" => trim($q["option_a"] ?? "")],
-                    ["optionKey" => "B", "text" => trim($q["option_b"] ?? "")],
-                    ["optionKey" => "C", "text" => trim($q["option_c"] ?? "")],
-                    ["optionKey" => "D", "text" => trim($q["option_d"] ?? "")]
-                ],
-                "correctOption" => strtoupper(trim($q["correct_option"] ?? "A")),
-                "explanation" => trim($q["explanation"] ?? "")
+                "questionText" => $qText,
+                "question_text" => $qText,
+                "topic" => $subTopic,
+                "topicText" => "$subTopic · $quizSubject",
+                "instructionText" => count($optionsList) <= 2 ? "Choose True or False." : "Choose one answer.",
+                "modeText" => "$difficulty · $questionType",
+                "options" => $optionsList,
+                "correctOption" => $correctOpt,
+                "correct_option" => $correctOpt,
+                "explanation" => $explanation
             ];
         }
     }
