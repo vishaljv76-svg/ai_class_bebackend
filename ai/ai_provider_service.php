@@ -846,3 +846,269 @@ function generateTopicQuizWithGemini(string $topic, array $options = []): array 
         "quiz" => $quizData
     ];
 }
+
+/**
+ * Generates active-recall flashcards for a specific subject or topic using Google Gemini.
+ *
+ * @param string $topic Subject or topic name
+ * @param array $options Configuration options (num_cards)
+ * @return array Standardized result with parsed flashcards deck
+ */
+function generateTopicFlashcardsWithGemini(string $topic, array $options = []): array {
+    $apiKey = getProviderSecretKey("gemini");
+    if (empty($apiKey)) {
+        return [
+            "success" => false,
+            "error_code" => "GEMINI_KEY_MISSING",
+            "http_status" => 422,
+            "message" => "Google Gemini API key is not configured.",
+            "deck" => null
+        ];
+    }
+
+    $numCards = (int)($options["num_cards"] ?? $options["numberOfCards"] ?? 10);
+    if ($numCards < 1) $numCards = 10;
+    if ($numCards > 30) $numCards = 30;
+
+    $analysis = analyzeTopicPrompt($topic);
+    $rawTopic = $analysis["raw"];
+    $subject = $analysis["subject"];
+    $subtopic = $analysis["subtopic"];
+    $examGuidance = $analysis["exam_guidance"];
+    $domainHints = $analysis["domain_hints"];
+
+    $systemInstruction = "You are SmartNotes AI, an expert academic professor and study specialist.\n" .
+        "Your task is to generate exactly {$numCards} high-yield, academically rigorous, active-recall study flashcards for: '{$rawTopic}'.\n\n" .
+        "User Prompt Analysis:\n" .
+        "- Subject Domain: {$subject}\n" .
+        "- Focus Subtopic: {$subtopic}\n" .
+        "- {$examGuidance}\n\n" .
+        "Domain Directives:\n" .
+        "{$domainHints}\n\n" .
+        "CRITICAL RULES:\n" .
+        "1. STRICT TOPIC FOCUS: Every card must directly test an important concept, mechanism, definition, theorem, or calculation of '{$rawTopic}'.\n" .
+        "2. ACTIVE RECALL FORMAT: Each card must have:\n" .
+        "   - 'front': A focused question, conceptual challenge, scenario, or term (1-2 sentences). Do not reveal the answer on the front.\n" .
+        "   - 'back': A comprehensive, accurate, student-friendly answer/explanation (2-4 sentences).\n" .
+        "   - 'hint': A brief 2-5 word conceptual clue or category.\n" .
+        "3. HIGH QUALITY & NO DUPLICATES: Each card must explore a distinct aspect.\n" .
+        "4. OUTPUT FORMAT: Respond STRICTLY in valid JSON matching this exact structure without markdown fences:\n" .
+        "{\n" .
+        "  \"deck_title\": \"{$rawTopic} Flashcards\",\n" .
+        "  \"subject\": \"{$subject}\",\n" .
+        "  \"topic\": \"{$subtopic}\",\n" .
+        "  \"total_cards\": {$numCards},\n" .
+        "  \"flashcards\": [\n" .
+        "    {\n" .
+        "      \"card_number\": 1,\n" .
+        "      \"front\": \"Front question or prompt...\",\n" .
+        "      \"back\": \"Back detailed explanation or answer...\",\n" .
+        "      \"hint\": \"Conceptual clue\"\n" .
+        "    }\n" .
+        "  ]\n" .
+        "}";
+
+    $userPrompt = "Generate {$numCards} active-recall flashcards for '{$rawTopic}' in strict JSON format now.";
+
+    $configuredModel = getenv("SMARTNOTES_GEMINI_MODEL") 
+        ?: ($_ENV["SMARTNOTES_GEMINI_MODEL"] ?? "gemini-3.5-flash-lite");
+
+    $candidateModels = array_unique([
+        $configuredModel,
+        "gemini-3.5-flash-lite",
+        "gemini-flash-lite-latest",
+        "gemini-3.1-flash-lite",
+        "gemini-3.5-flash",
+        "gemini-3.8-flash"
+    ]);
+
+    $lastHttpCode = 0;
+    $lastCurlError = "";
+    $rawResponseText = "";
+    $successfulModel = null;
+    $cards = null;
+
+    $maxAttempts = 2;
+    for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+        foreach ($candidateModels as $currentModel) {
+            $payloadData = [
+                "contents" => [
+                    [
+                        "role" => "user",
+                        "parts" => [
+                            ["text" => $systemInstruction . "\n\n" . $userPrompt]
+                        ]
+                    ]
+                ],
+                "generationConfig" => [
+                    "temperature" => 0.65,
+                    "maxOutputTokens" => 8192,
+                    "responseMimeType" => "application/json"
+                ]
+            ];
+            $payloadJson = json_encode($payloadData, JSON_UNESCAPED_UNICODE);
+
+            $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$currentModel}:generateContent";
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $endpoint);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $payloadJson);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                "Content-Type: application/json",
+                "x-goog-api-key: " . $apiKey
+            ]);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 75);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+
+            $rawResponse = curl_exec($ch);
+            $lastCurlError = curl_error($ch);
+            $lastHttpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($lastHttpCode === 503 || $lastHttpCode === 429 || (!empty($lastCurlError) && strpos($lastCurlError, 'timed out') !== false)) {
+                continue;
+            }
+
+            if ($lastHttpCode >= 200 && $lastHttpCode < 300 && empty($lastCurlError)) {
+                $responseData = json_decode($rawResponse, true);
+                $candidatePart = $responseData["candidates"][0]["content"]["parts"][0]["text"] ?? "";
+                if (!empty($candidatePart)) {
+                    $parsed = extractFlashcardsFromGeminiResponse($candidatePart, $rawTopic);
+                    if ($parsed && count($parsed) > 0) {
+                        $cards = $parsed;
+                        $rawResponseText = $candidatePart;
+                        $successfulModel = $currentModel;
+                        break 2;
+                    }
+                }
+            }
+        }
+
+        if ($attempt < $maxAttempts && empty($cards)) {
+            usleep(500000);
+        }
+    }
+
+    if (empty($cards) || count($cards) === 0) {
+        if (!empty($lastCurlError)) {
+            return [
+                "success" => false,
+                "error_code" => "AI_NETWORK_ERROR",
+                "http_status" => 502,
+                "message" => "Failed to reach Google Gemini: " . $lastCurlError
+            ];
+        }
+
+        if ($lastHttpCode === 401 || $lastHttpCode === 403) {
+            return [
+                "success" => false,
+                "error_code" => "AI_AUTHENTICATION_FAILED",
+                "http_status" => 401,
+                "message" => "Google Gemini authentication failed. Invalid API key."
+            ];
+        }
+
+        if ($lastHttpCode === 429) {
+            return [
+                "success" => false,
+                "error_code" => "AI_RATE_LIMIT_EXCEEDED",
+                "http_status" => 429,
+                "message" => "Google Gemini rate limit or quota exceeded. Please try again shortly."
+            ];
+        }
+
+        return [
+            "success" => false,
+            "error_code" => "AI_INVALID_JSON_RESPONSE",
+            "http_status" => 502,
+            "message" => "Gemini response could not be parsed as valid flashcards for '{$rawTopic}'.",
+            "raw_output" => substr($rawResponseText, 0, 500)
+        ];
+    }
+
+    $deckData = [
+        "deck_title" => "{$rawTopic} Flashcards",
+        "subject" => $subject,
+        "topic" => $subtopic,
+        "total_cards" => count($cards),
+        "flashcards" => $cards
+    ];
+
+    return [
+        "success" => true,
+        "service_used" => "Google Gemini",
+        "model_used" => $successfulModel ?: $configuredModel,
+        "deck" => $deckData
+    ];
+}
+
+/**
+ * Resiliently extracts and sanitizes flashcards from Gemini's response.
+ */
+function extractFlashcardsFromGeminiResponse(string $rawText, string $fallbackTopic): ?array {
+    $clean = trim($rawText);
+    if (str_starts_with($clean, "```json")) {
+        $clean = substr($clean, 7);
+    } elseif (str_starts_with($clean, "```")) {
+        $clean = substr($clean, 3);
+    }
+    if (str_ends_with($clean, "```")) {
+        $clean = substr($clean, 0, -3);
+    }
+    $clean = trim($clean);
+
+    $decoded = json_decode($clean, true);
+    if (!is_array($decoded)) {
+        $cleanFixed = preg_replace('/,\s*([\]}])/m', '$1', $clean);
+        $decoded = json_decode($cleanFixed, true);
+        if (!is_array($decoded)) {
+            return null;
+        }
+    }
+
+    $rawCards = [];
+    if (isset($decoded["flashcards"]) && is_array($decoded["flashcards"])) {
+        $rawCards = $decoded["flashcards"];
+    } elseif (isset($decoded["cards"]) && is_array($decoded["cards"])) {
+        $rawCards = $decoded["cards"];
+    } elseif (isset($decoded["deck"]["flashcards"]) && is_array($decoded["deck"]["flashcards"])) {
+        $rawCards = $decoded["deck"]["flashcards"];
+    } elseif (isset($decoded[0]) && is_array($decoded[0])) {
+        $rawCards = $decoded;
+    }
+
+    if (empty($rawCards)) {
+        return null;
+    }
+
+    $sanitized = [];
+    $seenQuestions = [];
+
+    foreach ($rawCards as $idx => $card) {
+        if (!is_array($card)) continue;
+
+        $front = trim((string)($card["front"] ?? $card["question"] ?? $card["prompt"] ?? $card["term"] ?? ""));
+        $back = trim((string)($card["back"] ?? $card["answer"] ?? $card["explanation"] ?? $card["definition"] ?? ""));
+        $hint = trim((string)($card["hint"] ?? $card["category"] ?? $card["clue"] ?? $fallbackTopic));
+
+        if (strlen($front) < 10 || strlen($back) < 10) continue;
+
+        $normalizedFront = strtolower(preg_replace('/[^a-z0-9]/', '', $front));
+        if (isset($seenQuestions[$normalizedFront])) continue;
+        $seenQuestions[$normalizedFront] = true;
+
+        $sanitized[] = [
+            "card_number" => count($sanitized) + 1,
+            "front" => $front,
+            "back" => $back,
+            "hint" => $hint
+        ];
+    }
+
+    return $sanitized;
+}
