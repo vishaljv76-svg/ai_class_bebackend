@@ -211,6 +211,44 @@ function executeGeminiGenerateContent(string $apiKey, array $messages, array $op
         ];
     }
 
+    // Attach multimodal image payload if provided in options
+    $rawImageData = $options["image_data"] ?? $options["image"] ?? $options["image_base64"] ?? null;
+    if (!empty($rawImageData) && is_string($rawImageData)) {
+        $cleanImageData = preg_replace('#^data:image/\w+;base64,#i', '', trim($rawImageData));
+        $cleanImageData = str_replace(["\r", "\n", " "], '', $cleanImageData);
+
+        $mimeType = strtolower(trim((string)($options["image_mime"] ?? $options["image_type"] ?? "image/jpeg")));
+        if ($mimeType === "image/jpg") {
+            $mimeType = "image/jpeg";
+        }
+        if (!in_array($mimeType, ["image/jpeg", "image/png", "image/webp", "image/gif"])) {
+            $mimeType = "image/jpeg";
+        }
+
+        if (!empty($cleanImageData)) {
+            $imagePart = [
+                "inlineData" => [
+                    "mimeType" => $mimeType,
+                    "data" => $cleanImageData
+                ]
+            ];
+
+            // Attach image part to the last user turn so Gemini receives it with context
+            $lastIndex = count($contents) - 1;
+            if ($contents[$lastIndex]["role"] === "user") {
+                array_unshift($contents[$lastIndex]["parts"], $imagePart);
+            } else {
+                $contents[] = [
+                    "role" => "user",
+                    "parts" => [
+                        $imagePart,
+                        ["text" => "Please analyze this image and explain it clearly step by step."]
+                    ]
+                ];
+            }
+        }
+    }
+
     // 2. Prepare Academic System Instruction
     $systemInstruction = "You are SmartNotes AI, an expert academic tutor and university study assistant.\n" .
         "Your goal is to provide clear, high-quality, comprehensive, and student-friendly explanations.\n\n" .

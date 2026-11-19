@@ -196,6 +196,51 @@ try {
     // =========================================================================
     $messageText = trim((string)($data["message"] ?? $data["question"] ?? ""));
 
+    // Multimodal Image Processing
+    $imageData = $data["image_data"] ?? $data["image"] ?? $data["image_base64"] ?? null;
+    $imageMime = strtolower(trim((string)($data["image_mime"] ?? $data["image_type"] ?? "image/jpeg")));
+    if ($imageMime === "image/jpg") {
+        $imageMime = "image/jpeg";
+    }
+    if (!in_array($imageMime, ["image/jpeg", "image/png", "image/webp", "image/gif"])) {
+        $imageMime = "image/jpeg";
+    }
+
+    if (!empty($imageData) && is_string($imageData)) {
+        // Strip data URI prefix if provided
+        $imageData = preg_replace('#^data:image/\w+;base64,#i', '', trim($imageData));
+        $imageData = str_replace(["\r", "\n", " "], '', $imageData);
+
+        // Max 7MB base64 (~5MB binary)
+        if (strlen($imageData) > 7 * 1024 * 1024) {
+            http_response_code(400);
+            echo json_encode([
+                "success" => false,
+                "error_code" => "IMAGE_TOO_LARGE",
+                "message" => "Image exceeds maximum allowed size of 5MB."
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        // Validate base64 string
+        if (base64_decode($imageData, true) === false) {
+            http_response_code(400);
+            echo json_encode([
+                "success" => false,
+                "error_code" => "INVALID_IMAGE_DATA",
+                "message" => "Invalid base64 image data."
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        // If message text is blank, set default academic explanation prompt
+        if ($messageText === "") {
+            $messageText = "Please analyze this image and explain it clearly step by step.";
+        }
+    } else {
+        $imageData = null;
+    }
+
     // Validation: Empty message check
     if ($messageText === "") {
         http_response_code(400);
@@ -325,7 +370,9 @@ try {
     // Call provider abstraction service
     $aiResult = dispatchChatMessage($contextPayload, [
         "subject" => trim((string)($data["subject"] ?? "")),
-        "lecture_title" => trim((string)($data["lecture_title"] ?? ""))
+        "lecture_title" => trim((string)($data["lecture_title"] ?? "")),
+        "image_data" => $imageData,
+        "image_mime" => $imageMime
     ]);
 
     $assistantMsgId = null;
